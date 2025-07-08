@@ -7,9 +7,13 @@ part 'ingredient.freezed.dart';
 @freezed
 class Ingredient with _$Ingredient {
   const factory Ingredient({
+    // 名称
     required String name,
+    // 数量
     required String amount,
+    // 单位
     required String unit,
+    // 备注
     String? notes,
   }) = _Ingredient;
 
