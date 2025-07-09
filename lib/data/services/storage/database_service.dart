@@ -41,4 +41,12 @@ class DatabaseService {
     final box = await instance;
     await box.clear();
   }
+
+  Future<bool> isRecipeFavorite(String recipeId) async {
+    final box = await instance;
+    final recipe = box.values.firstWhere(
+      (recipe) => recipe.recipeId == recipeId,
+    );
+    return recipe.isFavorite;
+  }
 }

@@ -76,7 +76,7 @@ class RecipeModel extends HiveObject{
 
   RecipeModel();
   
-  RecipeModel.formDomain(Recipe recipe) {
+  RecipeModel.fromDomain(Recipe recipe) {
     recipeId = recipe.id;
     name = recipe.name;
     description = recipe.description;
@@ -206,4 +206,5 @@ class RecipeModel extends HiveObject{
       return null;
     }
   }
+
 }

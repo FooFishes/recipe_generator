@@ -1,11 +1,12 @@
 import 'package:recipe_generator/domain/entities/recipe.dart';
 
 abstract class RecipeRepository {
+  Future<List<Recipe>> generateRecipes(String ingredients, {bool forceCulturalStory = false});
   Future<List<Recipe>> getFavoriteRecipes();
   Future<void> saveFavoriteRecipe(Recipe recipe);
-  Future<void> removeFavoriteRecipe(Recipe recipe);
-  Future<void> toggleFavoriteRecipe(Recipe recipe);
-  Future<bool> isRecipeFavorite(Recipe recipe);
+  Future<void> removeFavoriteRecipe(String recipeId);
+  Future<void> toggleFavoriteRecipe(String recipeId);
+  Future<bool> isRecipeFavorite(String recipeId);
   Future<void> clearAllFavorites();
 
   //TODO: 缓存,搜索和过滤功能

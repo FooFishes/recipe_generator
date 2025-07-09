@@ -20,7 +20,7 @@ CulturalStory _$CulturalStoryFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$CulturalStory {
-  String get triggerIngerdient => throw _privateConstructorUsedError;
+  String get triggerIngredient => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
 
@@ -40,7 +40,7 @@ abstract class $CulturalStoryCopyWith<$Res> {
           CulturalStory value, $Res Function(CulturalStory) then) =
       _$CulturalStoryCopyWithImpl<$Res, CulturalStory>;
   @useResult
-  $Res call({String triggerIngerdient, String title, String content});
+  $Res call({String triggerIngredient, String title, String content});
 }
 
 /// @nodoc
@@ -58,14 +58,14 @@ class _$CulturalStoryCopyWithImpl<$Res, $Val extends CulturalStory>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? triggerIngerdient = null,
+    Object? triggerIngredient = null,
     Object? title = null,
     Object? content = null,
   }) {
     return _then(_value.copyWith(
-      triggerIngerdient: null == triggerIngerdient
-          ? _value.triggerIngerdient
-          : triggerIngerdient // ignore: cast_nullable_to_non_nullable
+      triggerIngredient: null == triggerIngredient
+          ? _value.triggerIngredient
+          : triggerIngredient // ignore: cast_nullable_to_non_nullable
               as String,
       title: null == title
           ? _value.title
@@ -87,7 +87,7 @@ abstract class _$$CulturalStoryImplCopyWith<$Res>
       __$$CulturalStoryImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String triggerIngerdient, String title, String content});
+  $Res call({String triggerIngredient, String title, String content});
 }
 
 /// @nodoc
@@ -103,14 +103,14 @@ class __$$CulturalStoryImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? triggerIngerdient = null,
+    Object? triggerIngredient = null,
     Object? title = null,
     Object? content = null,
   }) {
     return _then(_$CulturalStoryImpl(
-      triggerIngerdient: null == triggerIngerdient
-          ? _value.triggerIngerdient
-          : triggerIngerdient // ignore: cast_nullable_to_non_nullable
+      triggerIngredient: null == triggerIngredient
+          ? _value.triggerIngredient
+          : triggerIngredient // ignore: cast_nullable_to_non_nullable
               as String,
       title: null == title
           ? _value.title
@@ -128,7 +128,7 @@ class __$$CulturalStoryImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$CulturalStoryImpl implements _CulturalStory {
   const _$CulturalStoryImpl(
-      {required this.triggerIngerdient,
+      {required this.triggerIngredient,
       required this.title,
       required this.content});
 
@@ -136,7 +136,7 @@ class _$CulturalStoryImpl implements _CulturalStory {
       _$$CulturalStoryImplFromJson(json);
 
   @override
-  final String triggerIngerdient;
+  final String triggerIngredient;
   @override
   final String title;
   @override
@@ -144,7 +144,7 @@ class _$CulturalStoryImpl implements _CulturalStory {
 
   @override
   String toString() {
-    return 'CulturalStory(triggerIngerdient: $triggerIngerdient, title: $title, content: $content)';
+    return 'CulturalStory(triggerIngredient: $triggerIngredient, title: $title, content: $content)';
   }
 
   @override
@@ -152,8 +152,8 @@ class _$CulturalStoryImpl implements _CulturalStory {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$CulturalStoryImpl &&
-            (identical(other.triggerIngerdient, triggerIngerdient) ||
-                other.triggerIngerdient == triggerIngerdient) &&
+            (identical(other.triggerIngredient, triggerIngredient) ||
+                other.triggerIngredient == triggerIngredient) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.content, content) || other.content == content));
   }
@@ -161,7 +161,7 @@ class _$CulturalStoryImpl implements _CulturalStory {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, triggerIngerdient, title, content);
+      Object.hash(runtimeType, triggerIngredient, title, content);
 
   /// Create a copy of CulturalStory
   /// with the given fields replaced by the non-null parameter values.
@@ -181,7 +181,7 @@ class _$CulturalStoryImpl implements _CulturalStory {
 
 abstract class _CulturalStory implements CulturalStory {
   const factory _CulturalStory(
-      {required final String triggerIngerdient,
+      {required final String triggerIngredient,
       required final String title,
       required final String content}) = _$CulturalStoryImpl;
 
@@ -189,7 +189,7 @@ abstract class _CulturalStory implements CulturalStory {
       _$CulturalStoryImpl.fromJson;
 
   @override
-  String get triggerIngerdient;
+  String get triggerIngredient;
   @override
   String get title;
   @override

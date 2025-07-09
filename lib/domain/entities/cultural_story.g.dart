@@ -8,14 +8,14 @@ part of 'cultural_story.dart';
 
 _$CulturalStoryImpl _$$CulturalStoryImplFromJson(Map<String, dynamic> json) =>
     _$CulturalStoryImpl(
-      triggerIngerdient: json['triggerIngerdient'] as String,
+      triggerIngredient: json['triggerIngredient'] as String,
       title: json['title'] as String,
       content: json['content'] as String,
     );
 
 Map<String, dynamic> _$$CulturalStoryImplToJson(_$CulturalStoryImpl instance) =>
     <String, dynamic>{
-      'triggerIngerdient': instance.triggerIngerdient,
+      'triggerIngredient': instance.triggerIngredient,
       'title': instance.title,
       'content': instance.content,
     };
