@@ -25,12 +25,12 @@ class RecipeModelAdapter extends TypeAdapter<RecipeModel> {
       ..instructionsJson = fields[5] as String
       ..prepTime = fields[6] as int
       ..cookTime = fields[7] as int
-      ..serving = fields[8] as int
+      ..servings = fields[8] as int
       ..difficulty = fields[9] as String
       ..cuisine = fields[10] as String
       ..tagsJson = fields[11] as String
       ..nutritionJson = fields[12] as String
-      ..createdAt = fields[13] as DateTime?
+      ..createdAt = fields[13] as DateTime
       ..isFavorite = fields[14] as bool
       ..culturalStoryJson = fields[15] as String?;
   }
@@ -56,7 +56,7 @@ class RecipeModelAdapter extends TypeAdapter<RecipeModel> {
       ..writeByte(7)
       ..write(obj.cookTime)
       ..writeByte(8)
-      ..write(obj.serving)
+      ..write(obj.servings)
       ..writeByte(9)
       ..write(obj.difficulty)
       ..writeByte(10)

@@ -9,9 +9,9 @@ part of 'ingredient.dart';
 _$IngredientImpl _$$IngredientImplFromJson(Map<String, dynamic> json) =>
     _$IngredientImpl(
       name: json['name'] as String,
-      amount: json['amount'] as String,
+      amount: (json['amount'] as num).toDouble(),
       unit: json['unit'] as String,
-      notes: json['notes'] as String?,
+      isOptional: json['isOptional'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$IngredientImplToJson(_$IngredientImpl instance) =>
@@ -19,5 +19,5 @@ Map<String, dynamic> _$$IngredientImplToJson(_$IngredientImpl instance) =>
       'name': instance.name,
       'amount': instance.amount,
       'unit': instance.unit,
-      'notes': instance.notes,
+      'isOptional': instance.isOptional,
     };

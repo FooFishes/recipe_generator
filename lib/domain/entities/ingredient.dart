@@ -10,11 +10,11 @@ class Ingredient with _$Ingredient {
     // 名称
     required String name,
     // 数量
-    required String amount,
+    required double amount,
     // 单位
     required String unit,
-    // 备注
-    String? notes,
+    // 是否可选
+    @Default(false) bool isOptional,
   }) = _Ingredient;
 
   factory Ingredient.fromJson(Map<String, dynamic> json) => _$IngredientFromJson(json);

@@ -20,14 +20,15 @@ NutritionAnalysis _$NutritionAnalysisFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$NutritionAnalysis {
-  double get calories => throw _privateConstructorUsedError;
-  double get protein => throw _privateConstructorUsedError;
-  double get carbs => throw _privateConstructorUsedError;
-  double get fat => throw _privateConstructorUsedError;
-  double get fiber => throw _privateConstructorUsedError;
-  double get sugar => throw _privateConstructorUsedError;
-  double get sodium => throw _privateConstructorUsedError;
-  String get summary => throw _privateConstructorUsedError;
+// 热量
+  double get calories => throw _privateConstructorUsedError; // 蛋白质
+  double get protein => throw _privateConstructorUsedError; // 碳水化合物
+  double get carbs => throw _privateConstructorUsedError; // 脂肪
+  double get fat => throw _privateConstructorUsedError; // 纤维
+  double get fiber => throw _privateConstructorUsedError; // 糖
+  double get sugar => throw _privateConstructorUsedError; // 钠
+  double get sodium => throw _privateConstructorUsedError; // 总结
+  String get summary => throw _privateConstructorUsedError; // 指南
   String get guidance => throw _privateConstructorUsedError;
 
   /// Serializes this NutritionAnalysis to a JSON map.
@@ -225,22 +226,31 @@ class _$NutritionAnalysisImpl implements _NutritionAnalysis {
   factory _$NutritionAnalysisImpl.fromJson(Map<String, dynamic> json) =>
       _$$NutritionAnalysisImplFromJson(json);
 
+// 热量
   @override
   final double calories;
+// 蛋白质
   @override
   final double protein;
+// 碳水化合物
   @override
   final double carbs;
+// 脂肪
   @override
   final double fat;
+// 纤维
   @override
   final double fiber;
+// 糖
   @override
   final double sugar;
+// 钠
   @override
   final double sodium;
+// 总结
   @override
   final String summary;
+// 指南
   @override
   final String guidance;
 
@@ -304,22 +314,23 @@ abstract class _NutritionAnalysis implements NutritionAnalysis {
   factory _NutritionAnalysis.fromJson(Map<String, dynamic> json) =
       _$NutritionAnalysisImpl.fromJson;
 
+// 热量
   @override
-  double get calories;
+  double get calories; // 蛋白质
   @override
-  double get protein;
+  double get protein; // 碳水化合物
   @override
-  double get carbs;
+  double get carbs; // 脂肪
   @override
-  double get fat;
+  double get fat; // 纤维
   @override
-  double get fiber;
+  double get fiber; // 糖
   @override
-  double get sugar;
+  double get sugar; // 钠
   @override
-  double get sodium;
+  double get sodium; // 总结
   @override
-  String get summary;
+  String get summary; // 指南
   @override
   String get guidance;
 

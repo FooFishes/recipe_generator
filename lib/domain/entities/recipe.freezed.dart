@@ -29,14 +29,14 @@ mixin _$Recipe {
   List<String> get instructions => throw _privateConstructorUsedError; // 准备时间
   int get prepTime => throw _privateConstructorUsedError; // 烹饪时间
   int get cookTime => throw _privateConstructorUsedError; // 几人份
-  int get serving => throw _privateConstructorUsedError; // 烹饪难度
+  int get servings => throw _privateConstructorUsedError; // 烹饪难度
   String get difficulty => throw _privateConstructorUsedError; // 菜系
   String get cuisine => throw _privateConstructorUsedError; // 标签
   List<String> get tags => throw _privateConstructorUsedError; // 营养信息
   NutritionAnalysis get nutrition => throw _privateConstructorUsedError; // 文化故事
   CulturalStory? get culturalStory =>
       throw _privateConstructorUsedError; // 创建时间
-  DateTime? get createdAt => throw _privateConstructorUsedError; // 是否收藏
+  DateTime get createdAt => throw _privateConstructorUsedError; // 是否收藏
   bool get isFavorite => throw _privateConstructorUsedError;
 
   /// Serializes this Recipe to a JSON map.
@@ -61,13 +61,13 @@ abstract class $RecipeCopyWith<$Res> {
       List<String> instructions,
       int prepTime,
       int cookTime,
-      int serving,
+      int servings,
       String difficulty,
       String cuisine,
       List<String> tags,
       NutritionAnalysis nutrition,
       CulturalStory? culturalStory,
-      DateTime? createdAt,
+      DateTime createdAt,
       bool isFavorite});
 
   $NutritionAnalysisCopyWith<$Res> get nutrition;
@@ -96,13 +96,13 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
     Object? instructions = null,
     Object? prepTime = null,
     Object? cookTime = null,
-    Object? serving = null,
+    Object? servings = null,
     Object? difficulty = null,
     Object? cuisine = null,
     Object? tags = null,
     Object? nutrition = null,
     Object? culturalStory = freezed,
-    Object? createdAt = freezed,
+    Object? createdAt = null,
     Object? isFavorite = null,
   }) {
     return _then(_value.copyWith(
@@ -134,9 +134,9 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
           ? _value.cookTime
           : cookTime // ignore: cast_nullable_to_non_nullable
               as int,
-      serving: null == serving
-          ? _value.serving
-          : serving // ignore: cast_nullable_to_non_nullable
+      servings: null == servings
+          ? _value.servings
+          : servings // ignore: cast_nullable_to_non_nullable
               as int,
       difficulty: null == difficulty
           ? _value.difficulty
@@ -158,10 +158,10 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
           ? _value.culturalStory
           : culturalStory // ignore: cast_nullable_to_non_nullable
               as CulturalStory?,
-      createdAt: freezed == createdAt
+      createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       isFavorite: null == isFavorite
           ? _value.isFavorite
           : isFavorite // ignore: cast_nullable_to_non_nullable
@@ -209,13 +209,13 @@ abstract class _$$RecipeImplCopyWith<$Res> implements $RecipeCopyWith<$Res> {
       List<String> instructions,
       int prepTime,
       int cookTime,
-      int serving,
+      int servings,
       String difficulty,
       String cuisine,
       List<String> tags,
       NutritionAnalysis nutrition,
       CulturalStory? culturalStory,
-      DateTime? createdAt,
+      DateTime createdAt,
       bool isFavorite});
 
   @override
@@ -244,13 +244,13 @@ class __$$RecipeImplCopyWithImpl<$Res>
     Object? instructions = null,
     Object? prepTime = null,
     Object? cookTime = null,
-    Object? serving = null,
+    Object? servings = null,
     Object? difficulty = null,
     Object? cuisine = null,
     Object? tags = null,
     Object? nutrition = null,
     Object? culturalStory = freezed,
-    Object? createdAt = freezed,
+    Object? createdAt = null,
     Object? isFavorite = null,
   }) {
     return _then(_$RecipeImpl(
@@ -282,9 +282,9 @@ class __$$RecipeImplCopyWithImpl<$Res>
           ? _value.cookTime
           : cookTime // ignore: cast_nullable_to_non_nullable
               as int,
-      serving: null == serving
-          ? _value.serving
-          : serving // ignore: cast_nullable_to_non_nullable
+      servings: null == servings
+          ? _value.servings
+          : servings // ignore: cast_nullable_to_non_nullable
               as int,
       difficulty: null == difficulty
           ? _value.difficulty
@@ -306,10 +306,10 @@ class __$$RecipeImplCopyWithImpl<$Res>
           ? _value.culturalStory
           : culturalStory // ignore: cast_nullable_to_non_nullable
               as CulturalStory?,
-      createdAt: freezed == createdAt
+      createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
       isFavorite: null == isFavorite
           ? _value.isFavorite
           : isFavorite // ignore: cast_nullable_to_non_nullable
@@ -329,13 +329,13 @@ class _$RecipeImpl implements _Recipe {
       required final List<String> instructions,
       required this.prepTime,
       required this.cookTime,
-      required this.serving,
+      required this.servings,
       required this.difficulty,
       required this.cuisine,
       required final List<String> tags,
       required this.nutrition,
       this.culturalStory,
-      this.createdAt,
+      required this.createdAt,
       this.isFavorite = false})
       : _ingredients = ingredients,
         _instructions = instructions,
@@ -381,7 +381,7 @@ class _$RecipeImpl implements _Recipe {
   final int cookTime;
 // 几人份
   @override
-  final int serving;
+  final int servings;
 // 烹饪难度
   @override
   final String difficulty;
@@ -406,7 +406,7 @@ class _$RecipeImpl implements _Recipe {
   final CulturalStory? culturalStory;
 // 创建时间
   @override
-  final DateTime? createdAt;
+  final DateTime createdAt;
 // 是否收藏
   @override
   @JsonKey()
@@ -414,7 +414,7 @@ class _$RecipeImpl implements _Recipe {
 
   @override
   String toString() {
-    return 'Recipe(id: $id, name: $name, description: $description, ingredients: $ingredients, instructions: $instructions, prepTime: $prepTime, cookTime: $cookTime, serving: $serving, difficulty: $difficulty, cuisine: $cuisine, tags: $tags, nutrition: $nutrition, culturalStory: $culturalStory, createdAt: $createdAt, isFavorite: $isFavorite)';
+    return 'Recipe(id: $id, name: $name, description: $description, ingredients: $ingredients, instructions: $instructions, prepTime: $prepTime, cookTime: $cookTime, servings: $servings, difficulty: $difficulty, cuisine: $cuisine, tags: $tags, nutrition: $nutrition, culturalStory: $culturalStory, createdAt: $createdAt, isFavorite: $isFavorite)';
   }
 
   @override
@@ -434,7 +434,8 @@ class _$RecipeImpl implements _Recipe {
                 other.prepTime == prepTime) &&
             (identical(other.cookTime, cookTime) ||
                 other.cookTime == cookTime) &&
-            (identical(other.serving, serving) || other.serving == serving) &&
+            (identical(other.servings, servings) ||
+                other.servings == servings) &&
             (identical(other.difficulty, difficulty) ||
                 other.difficulty == difficulty) &&
             (identical(other.cuisine, cuisine) || other.cuisine == cuisine) &&
@@ -460,7 +461,7 @@ class _$RecipeImpl implements _Recipe {
       const DeepCollectionEquality().hash(_instructions),
       prepTime,
       cookTime,
-      serving,
+      servings,
       difficulty,
       cuisine,
       const DeepCollectionEquality().hash(_tags),
@@ -494,13 +495,13 @@ abstract class _Recipe implements Recipe {
       required final List<String> instructions,
       required final int prepTime,
       required final int cookTime,
-      required final int serving,
+      required final int servings,
       required final String difficulty,
       required final String cuisine,
       required final List<String> tags,
       required final NutritionAnalysis nutrition,
       final CulturalStory? culturalStory,
-      final DateTime? createdAt,
+      required final DateTime createdAt,
       final bool isFavorite}) = _$RecipeImpl;
 
   factory _Recipe.fromJson(Map<String, dynamic> json) = _$RecipeImpl.fromJson;
@@ -521,7 +522,7 @@ abstract class _Recipe implements Recipe {
   @override
   int get cookTime; // 几人份
   @override
-  int get serving; // 烹饪难度
+  int get servings; // 烹饪难度
   @override
   String get difficulty; // 菜系
   @override
@@ -533,7 +534,7 @@ abstract class _Recipe implements Recipe {
   @override
   CulturalStory? get culturalStory; // 创建时间
   @override
-  DateTime? get createdAt; // 是否收藏
+  DateTime get createdAt; // 是否收藏
   @override
   bool get isFavorite;
 

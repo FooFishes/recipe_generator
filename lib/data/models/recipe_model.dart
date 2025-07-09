@@ -44,7 +44,7 @@ class RecipeModel extends HiveObject{
 
   // 几人份
   @HiveField(8)
-  late int serving;
+  late int servings;
 
   // 烹饪难度
   @HiveField(9)
@@ -64,7 +64,7 @@ class RecipeModel extends HiveObject{
 
   // 创建时间
   @HiveField(13)
-  DateTime? createdAt;
+  late DateTime createdAt;
 
   // 收藏状态
   @HiveField(14)
@@ -72,7 +72,7 @@ class RecipeModel extends HiveObject{
 
   // 文化故事(JSON格式)
   @HiveField(15)
-  late String? culturalStoryJson;
+  String? culturalStoryJson;
 
   RecipeModel();
   
@@ -84,7 +84,7 @@ class RecipeModel extends HiveObject{
     instructionsJson = _encodeInstructions(recipe.instructions);
     prepTime = recipe.prepTime;
     cookTime = recipe.cookTime;
-    serving = recipe.serving;
+    servings = recipe.servings;
     difficulty = recipe.difficulty;
     cuisine = recipe.cuisine;
     tagsJson = _encodeTags(recipe.tags);
@@ -103,7 +103,7 @@ class RecipeModel extends HiveObject{
       instructions: _decodeInstructions(instructionsJson),
       prepTime: prepTime,
       cookTime: cookTime,
-      serving: serving,
+      servings: servings,
       difficulty: difficulty,
       cuisine: cuisine,
       tags: _decodeTags(tagsJson),

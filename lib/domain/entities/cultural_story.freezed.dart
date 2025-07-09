@@ -20,10 +20,9 @@ CulturalStory _$CulturalStoryFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$CulturalStory {
+  String get triggerIngerdient => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
-  String get origin => throw _privateConstructorUsedError;
-  List<String>? get traditions => throw _privateConstructorUsedError;
 
   /// Serializes this CulturalStory to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -41,8 +40,7 @@ abstract class $CulturalStoryCopyWith<$Res> {
           CulturalStory value, $Res Function(CulturalStory) then) =
       _$CulturalStoryCopyWithImpl<$Res, CulturalStory>;
   @useResult
-  $Res call(
-      {String title, String content, String origin, List<String>? traditions});
+  $Res call({String triggerIngerdient, String title, String content});
 }
 
 /// @nodoc
@@ -60,12 +58,15 @@ class _$CulturalStoryCopyWithImpl<$Res, $Val extends CulturalStory>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? triggerIngerdient = null,
     Object? title = null,
     Object? content = null,
-    Object? origin = null,
-    Object? traditions = freezed,
   }) {
     return _then(_value.copyWith(
+      triggerIngerdient: null == triggerIngerdient
+          ? _value.triggerIngerdient
+          : triggerIngerdient // ignore: cast_nullable_to_non_nullable
+              as String,
       title: null == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -74,14 +75,6 @@ class _$CulturalStoryCopyWithImpl<$Res, $Val extends CulturalStory>
           ? _value.content
           : content // ignore: cast_nullable_to_non_nullable
               as String,
-      origin: null == origin
-          ? _value.origin
-          : origin // ignore: cast_nullable_to_non_nullable
-              as String,
-      traditions: freezed == traditions
-          ? _value.traditions
-          : traditions // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
     ) as $Val);
   }
 }
@@ -94,8 +87,7 @@ abstract class _$$CulturalStoryImplCopyWith<$Res>
       __$$CulturalStoryImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String title, String content, String origin, List<String>? traditions});
+  $Res call({String triggerIngerdient, String title, String content});
 }
 
 /// @nodoc
@@ -111,12 +103,15 @@ class __$$CulturalStoryImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? triggerIngerdient = null,
     Object? title = null,
     Object? content = null,
-    Object? origin = null,
-    Object? traditions = freezed,
   }) {
     return _then(_$CulturalStoryImpl(
+      triggerIngerdient: null == triggerIngerdient
+          ? _value.triggerIngerdient
+          : triggerIngerdient // ignore: cast_nullable_to_non_nullable
+              as String,
       title: null == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -125,14 +120,6 @@ class __$$CulturalStoryImplCopyWithImpl<$Res>
           ? _value.content
           : content // ignore: cast_nullable_to_non_nullable
               as String,
-      origin: null == origin
-          ? _value.origin
-          : origin // ignore: cast_nullable_to_non_nullable
-              as String,
-      traditions: freezed == traditions
-          ? _value._traditions
-          : traditions // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
     ));
   }
 }
@@ -141,34 +128,23 @@ class __$$CulturalStoryImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$CulturalStoryImpl implements _CulturalStory {
   const _$CulturalStoryImpl(
-      {required this.title,
-      required this.content,
-      required this.origin,
-      final List<String>? traditions})
-      : _traditions = traditions;
+      {required this.triggerIngerdient,
+      required this.title,
+      required this.content});
 
   factory _$CulturalStoryImpl.fromJson(Map<String, dynamic> json) =>
       _$$CulturalStoryImplFromJson(json);
 
   @override
+  final String triggerIngerdient;
+  @override
   final String title;
   @override
   final String content;
-  @override
-  final String origin;
-  final List<String>? _traditions;
-  @override
-  List<String>? get traditions {
-    final value = _traditions;
-    if (value == null) return null;
-    if (_traditions is EqualUnmodifiableListView) return _traditions;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
-  }
 
   @override
   String toString() {
-    return 'CulturalStory(title: $title, content: $content, origin: $origin, traditions: $traditions)';
+    return 'CulturalStory(triggerIngerdient: $triggerIngerdient, title: $title, content: $content)';
   }
 
   @override
@@ -176,17 +152,16 @@ class _$CulturalStoryImpl implements _CulturalStory {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$CulturalStoryImpl &&
+            (identical(other.triggerIngerdient, triggerIngerdient) ||
+                other.triggerIngerdient == triggerIngerdient) &&
             (identical(other.title, title) || other.title == title) &&
-            (identical(other.content, content) || other.content == content) &&
-            (identical(other.origin, origin) || other.origin == origin) &&
-            const DeepCollectionEquality()
-                .equals(other._traditions, _traditions));
+            (identical(other.content, content) || other.content == content));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, title, content, origin,
-      const DeepCollectionEquality().hash(_traditions));
+  int get hashCode =>
+      Object.hash(runtimeType, triggerIngerdient, title, content);
 
   /// Create a copy of CulturalStory
   /// with the given fields replaced by the non-null parameter values.
@@ -206,22 +181,19 @@ class _$CulturalStoryImpl implements _CulturalStory {
 
 abstract class _CulturalStory implements CulturalStory {
   const factory _CulturalStory(
-      {required final String title,
-      required final String content,
-      required final String origin,
-      final List<String>? traditions}) = _$CulturalStoryImpl;
+      {required final String triggerIngerdient,
+      required final String title,
+      required final String content}) = _$CulturalStoryImpl;
 
   factory _CulturalStory.fromJson(Map<String, dynamic> json) =
       _$CulturalStoryImpl.fromJson;
 
   @override
+  String get triggerIngerdient;
+  @override
   String get title;
   @override
   String get content;
-  @override
-  String get origin;
-  @override
-  List<String>? get traditions;
 
   /// Create a copy of CulturalStory
   /// with the given fields replaced by the non-null parameter values.

@@ -24,7 +24,7 @@ class Recipe with _$Recipe {
     // 烹饪时间
     required int cookTime,
     // 几人份
-    required int serving,
+    required int servings,
     // 烹饪难度
     required String difficulty,
     // 菜系
@@ -36,7 +36,7 @@ class Recipe with _$Recipe {
     // 文化故事
     CulturalStory? culturalStory,
     // 创建时间
-    DateTime? createdAt,
+    required DateTime createdAt,
     // 是否收藏
     @Default(false) bool isFavorite,
   }) = _Recipe;

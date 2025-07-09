@@ -20,10 +20,11 @@ Ingredient _$IngredientFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Ingredient {
-  String get name => throw _privateConstructorUsedError;
-  String get amount => throw _privateConstructorUsedError;
-  String get unit => throw _privateConstructorUsedError;
-  String? get notes => throw _privateConstructorUsedError;
+// 名称
+  String get name => throw _privateConstructorUsedError; // 数量
+  double get amount => throw _privateConstructorUsedError; // 单位
+  String get unit => throw _privateConstructorUsedError; // 是否可选
+  bool get isOptional => throw _privateConstructorUsedError;
 
   /// Serializes this Ingredient to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -41,7 +42,7 @@ abstract class $IngredientCopyWith<$Res> {
           Ingredient value, $Res Function(Ingredient) then) =
       _$IngredientCopyWithImpl<$Res, Ingredient>;
   @useResult
-  $Res call({String name, String amount, String unit, String? notes});
+  $Res call({String name, double amount, String unit, bool isOptional});
 }
 
 /// @nodoc
@@ -62,7 +63,7 @@ class _$IngredientCopyWithImpl<$Res, $Val extends Ingredient>
     Object? name = null,
     Object? amount = null,
     Object? unit = null,
-    Object? notes = freezed,
+    Object? isOptional = null,
   }) {
     return _then(_value.copyWith(
       name: null == name
@@ -72,15 +73,15 @@ class _$IngredientCopyWithImpl<$Res, $Val extends Ingredient>
       amount: null == amount
           ? _value.amount
           : amount // ignore: cast_nullable_to_non_nullable
-              as String,
+              as double,
       unit: null == unit
           ? _value.unit
           : unit // ignore: cast_nullable_to_non_nullable
               as String,
-      notes: freezed == notes
-          ? _value.notes
-          : notes // ignore: cast_nullable_to_non_nullable
-              as String?,
+      isOptional: null == isOptional
+          ? _value.isOptional
+          : isOptional // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -93,7 +94,7 @@ abstract class _$$IngredientImplCopyWith<$Res>
       __$$IngredientImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String name, String amount, String unit, String? notes});
+  $Res call({String name, double amount, String unit, bool isOptional});
 }
 
 /// @nodoc
@@ -112,7 +113,7 @@ class __$$IngredientImplCopyWithImpl<$Res>
     Object? name = null,
     Object? amount = null,
     Object? unit = null,
-    Object? notes = freezed,
+    Object? isOptional = null,
   }) {
     return _then(_$IngredientImpl(
       name: null == name
@@ -122,15 +123,15 @@ class __$$IngredientImplCopyWithImpl<$Res>
       amount: null == amount
           ? _value.amount
           : amount // ignore: cast_nullable_to_non_nullable
-              as String,
+              as double,
       unit: null == unit
           ? _value.unit
           : unit // ignore: cast_nullable_to_non_nullable
               as String,
-      notes: freezed == notes
-          ? _value.notes
-          : notes // ignore: cast_nullable_to_non_nullable
-              as String?,
+      isOptional: null == isOptional
+          ? _value.isOptional
+          : isOptional // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -142,23 +143,28 @@ class _$IngredientImpl with DiagnosticableTreeMixin implements _Ingredient {
       {required this.name,
       required this.amount,
       required this.unit,
-      this.notes});
+      this.isOptional = false});
 
   factory _$IngredientImpl.fromJson(Map<String, dynamic> json) =>
       _$$IngredientImplFromJson(json);
 
+// 名称
   @override
   final String name;
+// 数量
   @override
-  final String amount;
+  final double amount;
+// 单位
   @override
   final String unit;
+// 是否可选
   @override
-  final String? notes;
+  @JsonKey()
+  final bool isOptional;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'Ingredient(name: $name, amount: $amount, unit: $unit, notes: $notes)';
+    return 'Ingredient(name: $name, amount: $amount, unit: $unit, isOptional: $isOptional)';
   }
 
   @override
@@ -169,7 +175,7 @@ class _$IngredientImpl with DiagnosticableTreeMixin implements _Ingredient {
       ..add(DiagnosticsProperty('name', name))
       ..add(DiagnosticsProperty('amount', amount))
       ..add(DiagnosticsProperty('unit', unit))
-      ..add(DiagnosticsProperty('notes', notes));
+      ..add(DiagnosticsProperty('isOptional', isOptional));
   }
 
   @override
@@ -180,12 +186,13 @@ class _$IngredientImpl with DiagnosticableTreeMixin implements _Ingredient {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.amount, amount) || other.amount == amount) &&
             (identical(other.unit, unit) || other.unit == unit) &&
-            (identical(other.notes, notes) || other.notes == notes));
+            (identical(other.isOptional, isOptional) ||
+                other.isOptional == isOptional));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, name, amount, unit, notes);
+  int get hashCode => Object.hash(runtimeType, name, amount, unit, isOptional);
 
   /// Create a copy of Ingredient
   /// with the given fields replaced by the non-null parameter values.
@@ -206,21 +213,22 @@ class _$IngredientImpl with DiagnosticableTreeMixin implements _Ingredient {
 abstract class _Ingredient implements Ingredient {
   const factory _Ingredient(
       {required final String name,
-      required final String amount,
+      required final double amount,
       required final String unit,
-      final String? notes}) = _$IngredientImpl;
+      final bool isOptional}) = _$IngredientImpl;
 
   factory _Ingredient.fromJson(Map<String, dynamic> json) =
       _$IngredientImpl.fromJson;
 
+// 名称
   @override
-  String get name;
+  String get name; // 数量
   @override
-  String get amount;
+  double get amount; // 单位
   @override
-  String get unit;
+  String get unit; // 是否可选
   @override
-  String? get notes;
+  bool get isOptional;
 
   /// Create a copy of Ingredient
   /// with the given fields replaced by the non-null parameter values.
