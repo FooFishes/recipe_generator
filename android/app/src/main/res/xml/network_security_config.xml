@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 本地开发环境配置 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+    </domain-config>
+
+    <!-- 生产环境基础配置 - 支持所有HTTPS连接 -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- 系统证书 -->
+            <certificates src="system"/>
+            <!-- 用户安装的证书 -->
+            <certificates src="user"/>
+        </trust-anchors>
+    </base-config>
+
+    <!-- 开发和调试模式覆盖配置 -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </debug-overrides>
+
+    <!-- 针对常见API服务器的特殊配置 -->
+    <domain-config>
+        <!-- 百度相关域名 -->
+        <domain includeSubdomains="true">baidu.com</domain>
+        <domain includeSubdomains="true">baidubce.com</domain>
+        <!-- OpenAI相关域名 -->
+        <domain includeSubdomains="true">openai.com</domain>
+        <domain includeSubdomains="true">api.openai.com</domain>
+        <!-- 其他常见AI服务域名 -->
+        <domain includeSubdomains="true">anthropic.com</domain>
+        <domain includeSubdomains="true">googleapis.com</domain>
+        <domain includeSubdomains="true">azure.com</domain>
+        <domain includeSubdomains="true">aliyuncs.com</domain>
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

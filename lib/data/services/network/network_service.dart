@@ -1,21 +1,25 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// 网络连接测试和诊断服务
-/// 
+///
 /// 提供网络连接状态检测、DNS解析测试和请求重试机制。
 /// 主要用于诊断和解决Android release版本中的网络连接问题。
-/// 
+///
 /// 主要功能：
 /// - 基本网络连接测试
-/// - API服务器连接测试  
+/// - API服务器连接测试
 /// - DNS解析能力检测
 /// - 带重试机制的网络请求包装器
 /// - 详细的网络诊断信息收集
 class NetworkService {
   /// 内部使用的HTTP客户端，配置较短的超时时间用于快速测试
   static final Dio _dio = Dio()
-    ..options.connectTimeout = const Duration(seconds: 10)
-    ..options.receiveTimeout = const Duration(seconds: 10);
+    ..options.connectTimeout = const Duration(seconds: 15)
+    ..options.receiveTimeout = const Duration(seconds: 15)
+    ..options.followRedirects = true
+    ..options.maxRedirects = 3
+    ..options.headers['User-Agent'] = 'RecipeGenerator/1.0.0 (${kReleaseMode ? "Release" : "Debug"})';
   
   /// 网络重试配置
   static const int _defaultMaxRetries = 3;
@@ -44,21 +48,32 @@ class NetworkService {
   }
   
   /// 测试基础网络连接
-  /// 
+  ///
   /// 使用可靠的公共服务测试基础网络连接能力。
-  /// 
+  ///
   /// 返回：
   /// - [Future<bool>] true表示网络连接正常，false表示网络不可用
   static Future<bool> testBasicConnection() async {
-    try {
-      
-      // 使用Google DNS进行连接测试
-      final response = await _dio.get('https://8.8.8.8');
-      
-      return response.statusCode != null;
-    } catch (e) {
-      return false;
+    // 尝试多个可靠的测试端点
+    final testUrls = [
+      'https://www.google.com/generate_204',  // Google连通性检测
+      'https://httpbin.org/status/200',       // HTTP测试服务
+      'https://www.baidu.com',                // 国内网络测试
+    ];
+
+    for (final url in testUrls) {
+      try {
+        final response = await _dio.get(url);
+        if (response.statusCode != null && response.statusCode! < 400) {
+          return true;
+        }
+      } catch (e) {
+        // 继续尝试下一个URL
+        continue;
+      }
     }
+
+    return false;
   }
 
 
@@ -107,37 +122,51 @@ class NetworkService {
   }
   
   /// 执行网络诊断
-  /// 
+  ///
   /// 执行一系列网络连接测试，返回详细的诊断信息。
-  /// 
+  ///
   /// 参数：
   /// - [apiUrl] 要测试的API服务器地址
-  /// 
+  ///
   /// 返回：
   /// - [Future<Map<String, dynamic>>] 包含诊断结果的映射
   static Future<Map<String, dynamic>> performNetworkDiagnostics({
     String? apiUrl,
   }) async {
-    
+
     final diagnostics = <String, dynamic>{
       'timestamp': DateTime.now().toIso8601String(),
+      'build_mode': kReleaseMode ? 'release' : 'debug',
       'basic_connection': false,
       'api_connection': false,
+      'dns_resolution': false,
+      'ssl_verification': false,
       'diagnostics_summary': '',
+      'detailed_errors': <String>[],
     };
-    
+
     try {
       // 测试基础网络连接
       diagnostics['basic_connection'] = await testBasicConnection();
-      
+
+      // 测试DNS解析
+      diagnostics['dns_resolution'] = await _testDnsResolution();
+
+      // 测试SSL证书验证
+      diagnostics['ssl_verification'] = await _testSslVerification();
+
       // 测试API连接（如果提供了URL）
       if (apiUrl != null) {
-        diagnostics['api_connection'] = await testApiConnection(apiUrl);
+        final apiResult = await _testApiConnectionDetailed(apiUrl);
+        diagnostics['api_connection'] = apiResult['success'];
+        if (apiResult['error'] != null) {
+          diagnostics['detailed_errors'].add('API连接: ${apiResult['error']}');
+        }
       }
-      
+
       // 生成诊断摘要
       diagnostics['diagnostics_summary'] = _generateDiagnosticsSummary(diagnostics);
-      
+
       return diagnostics;
     } catch (e) {
       diagnostics['error'] = e.toString();
@@ -145,20 +174,99 @@ class NetworkService {
       return diagnostics;
     }
   }
+
+  /// 测试DNS解析能力
+  static Future<bool> _testDnsResolution() async {
+    try {
+      // 尝试解析一个已知的域名
+      final response = await _dio.get('https://www.google.com/generate_204');
+      return response.statusCode == 204;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 测试SSL证书验证
+  static Future<bool> _testSslVerification() async {
+    try {
+      // 测试HTTPS连接
+      final response = await _dio.get('https://httpbin.org/status/200');
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 详细的API连接测试
+  static Future<Map<String, dynamic>> _testApiConnectionDetailed(String apiUrl) async {
+    try {
+      final response = await _dio.get(apiUrl);
+      return {
+        'success': response.statusCode != null && response.statusCode! < 500,
+        'status_code': response.statusCode,
+        'error': null,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'status_code': null,
+        'error': e.toString(),
+      };
+    }
+  }
   
   /// 生成诊断摘要
   static String _generateDiagnosticsSummary(Map<String, dynamic> diagnostics) {
     final basicConnection = diagnostics['basic_connection'] as bool;
     final apiConnection = diagnostics['api_connection'] as bool?;
-    
-    if (basicConnection && (apiConnection ?? true)) {
-      return '网络连接正常';
-    } else if (!basicConnection) {
-      return '基础网络连接失败，请检查网络设置';
-    } else if (apiConnection == false) {
-      return '基础网络正常，但API服务器不可达';
+    final dnsResolution = diagnostics['dns_resolution'] as bool? ?? false;
+    final sslVerification = diagnostics['ssl_verification'] as bool? ?? false;
+    final buildMode = diagnostics['build_mode'] as String? ?? 'unknown';
+    final errors = diagnostics['detailed_errors'] as List<String>? ?? [];
+
+    final summary = StringBuffer();
+    summary.writeln('构建模式: $buildMode');
+
+    if (basicConnection && dnsResolution && sslVerification && (apiConnection ?? true)) {
+      summary.writeln('✅ 网络连接完全正常');
     } else {
-      return '网络状态未知';
+      summary.writeln('❌ 检测到网络问题:');
+
+      if (!basicConnection) {
+        summary.writeln('• 基础网络连接失败');
+      }
+      if (!dnsResolution) {
+        summary.writeln('• DNS解析失败');
+      }
+      if (!sslVerification) {
+        summary.writeln('• SSL证书验证失败');
+      }
+      if (apiConnection == false) {
+        summary.writeln('• API服务器不可达');
+      }
+
+      if (errors.isNotEmpty) {
+        summary.writeln('\n详细错误信息:');
+        for (final error in errors) {
+          summary.writeln('• $error');
+        }
+      }
+
+      summary.writeln('\n建议解决方案:');
+      if (!basicConnection || !dnsResolution) {
+        summary.writeln('• 检查网络连接和DNS设置');
+        summary.writeln('• 尝试切换网络环境（WiFi/移动数据）');
+      }
+      if (!sslVerification) {
+        summary.writeln('• 检查设备时间设置是否正确');
+        summary.writeln('• 确认网络环境支持HTTPS连接');
+      }
+      if (apiConnection == false) {
+        summary.writeln('• 验证API服务器地址是否正确');
+        summary.writeln('• 检查API服务器是否正常运行');
+      }
     }
+
+    return summary.toString().trim();
   }
 }

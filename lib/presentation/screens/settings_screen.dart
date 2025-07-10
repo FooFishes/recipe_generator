@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:recipe_generator/presentation/screens/network_diagnostics_screen.dart';
 import '../../application/providers/recipe_providers.dart';
 import 'api_config_screen.dart';
 
@@ -211,6 +212,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const Text(
                       '注意：请妥善保管您的API密钥，不要与他人分享',
                       style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.network_check,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '网络诊断',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Text('如果遇到网络连接问题，可以使用网络诊断工具进行排查'),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const NetworkDiagnosticsScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.network_check),
+                        label: const Text('开始网络诊断'),
+                      ),
                     ),
                   ],
                 ),
