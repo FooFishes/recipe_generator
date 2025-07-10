@@ -71,90 +71,92 @@ class _NetworkDiagnosticsScreenState extends ConsumerState<NetworkDiagnosticsScr
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 诊断状态卡片
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.network_check,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '网络连接诊断',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    if (_isRunningDiagnostics)
-                      const Row(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 诊断状态卡片
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                          Icon(
+                            Icons.network_check,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                          SizedBox(width: 12),
-                          Text('正在进行网络诊断...'),
+                          const SizedBox(width: 8),
+                          Text(
+                            '网络连接诊断',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
                         ],
-                      )
-                    else if (_diagnosticsResult != null)
-                      _buildDiagnosticsResult()
-                    else
-                      const Text('点击刷新按钮开始诊断'),
-                  ],
+                      ),
+                      const SizedBox(height: 12),
+                      if (_isRunningDiagnostics)
+                        const Row(
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            SizedBox(width: 12),
+                            Text('正在进行网络诊断...'),
+                          ],
+                        )
+                      else if (_diagnosticsResult != null)
+                        _buildDiagnosticsResult()
+                      else
+                        const Text('点击刷新按钮开始诊断'),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // 帮助信息
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.help_outline,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '常见问题解决方案',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    const Text('• 确保设备已连接到互联网'),
-                    const SizedBox(height: 4),
-                    const Text('• 检查防火墙或代理设置'),
-                    const SizedBox(height: 4),
-                    const Text('• 验证API服务器地址是否正确'),
-                    const SizedBox(height: 4),
-                    const Text('• 尝试切换网络环境（WiFi/移动数据）'),
-                    const SizedBox(height: 4),
-                    const Text('• 确认设备时间设置正确'),
-                  ],
+              
+              const SizedBox(height: 16),
+              
+              // 帮助信息
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.help_outline,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '常见问题解决方案',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Text('• 确保设备已连接到互联网'),
+                      const SizedBox(height: 4),
+                      const Text('• 检查防火墙或代理设置'),
+                      const SizedBox(height: 4),
+                      const Text('• 验证API服务器地址是否正确'),
+                      const SizedBox(height: 4),
+                      const Text('• 尝试切换网络环境（WiFi/移动数据）'),
+                      const SizedBox(height: 4),
+                      const Text('• 确认设备时间设置正确'),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
