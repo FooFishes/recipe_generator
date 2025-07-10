@@ -138,12 +138,13 @@ class __$$IngredientImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$IngredientImpl with DiagnosticableTreeMixin implements _Ingredient {
+class _$IngredientImpl extends _Ingredient {
   const _$IngredientImpl(
       {required this.name,
       required this.amount,
       required this.unit,
-      this.isOptional = false});
+      this.isOptional = false})
+      : super._();
 
   factory _$IngredientImpl.fromJson(Map<String, dynamic> json) =>
       _$$IngredientImplFromJson(json);
@@ -161,22 +162,6 @@ class _$IngredientImpl with DiagnosticableTreeMixin implements _Ingredient {
   @override
   @JsonKey()
   final bool isOptional;
-
-  @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'Ingredient(name: $name, amount: $amount, unit: $unit, isOptional: $isOptional)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'Ingredient'))
-      ..add(DiagnosticsProperty('name', name))
-      ..add(DiagnosticsProperty('amount', amount))
-      ..add(DiagnosticsProperty('unit', unit))
-      ..add(DiagnosticsProperty('isOptional', isOptional));
-  }
 
   @override
   bool operator ==(Object other) {
@@ -210,12 +195,13 @@ class _$IngredientImpl with DiagnosticableTreeMixin implements _Ingredient {
   }
 }
 
-abstract class _Ingredient implements Ingredient {
+abstract class _Ingredient extends Ingredient {
   const factory _Ingredient(
       {required final String name,
       required final double amount,
       required final String unit,
       final bool isOptional}) = _$IngredientImpl;
+  const _Ingredient._() : super._();
 
   factory _Ingredient.fromJson(Map<String, dynamic> json) =
       _$IngredientImpl.fromJson;

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/providers/recipe_providers.dart';
+import 'api_config_screen.dart';
 
 /// 设置页面
-/// 
-/// 提供应用的主要配置功能，包括API密钥管理、文化故事开关、
+///
+/// 提供应用的主要配置功能，包括API配置导航、文化故事开关、
 /// 网络诊断工具和应用相关信息。使用Riverpod进行状态管理。
-/// 
+///
 /// 主要功能：
-/// - API密钥的输入、保存和删除
+/// - API配置页面的导航入口
 /// - 文化故事功能的开关控制
 /// - 网络连接状态诊断
 /// - 用户隐私和安全信息展示
@@ -21,94 +22,18 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  /// API密钥输入控制器
-  final _apiKeyController = TextEditingController();
-  
-  /// 控制API密钥是否以密码形式显示
-  bool _isObscured = true;
 
-  @override
-  void initState() {
-    super.initState();
-    // 在widget构建完成后加载已保存的API密钥
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final apiKey = ref.read(apiKeyProvider);
-      if (apiKey != null) {
-        _apiKeyController.text = apiKey;
-      }
-    });
-  }
 
-  @override
-  void dispose() {
-    _apiKeyController.dispose();
-    super.dispose();
-  }
-
-  /// 保存API密钥到安全存储
-  /// 
-  /// 验证用户输入的API密钥非空后，通过ApiKeyNotifier保存到设备的安全存储中。
-  /// 保存成功后显示确认消息。
-  void _saveApiKey() async {
-    final apiKey = _apiKeyController.text.trim();
-    if (apiKey.isNotEmpty) {
-      // 通过Riverpod provider保存API密钥
-      await ref.read(apiKeyProvider.notifier).saveApiKey(apiKey);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('API密钥已保存'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    }
-  }
-
-  /// 删除已保存的API密钥
-  /// 
-  /// 显示确认对话框，用户确认后删除本地存储的API密钥，
-  /// 并清空输入框内容，显示删除成功消息。
-  void _deleteApiKey() async {
-    // 显示确认对话框，防止误删
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除API密钥'),
-        content: const Text('确定要删除已保存的API密钥吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
-    );
-
-    // 用户确认删除后执行删除操作
-    if (confirmed == true) {
-      await ref.read(apiKeyProvider.notifier).deleteApiKey();
-      _apiKeyController.clear();  // 清空输入框
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('API密钥已删除'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final culturalStoryEnabled = ref.watch(culturalStoryProvider);
     final apiKey = ref.watch(apiKeyProvider);
     final hasApiKey = apiKey != null && apiKey.isNotEmpty;
-    final culturalStoryEnabled = ref.watch(culturalStoryProvider);
+    final model = ref.watch(modelProvider);
+    final hasModel = model != null && model.isNotEmpty;
+    final baseUrl = ref.watch(baseUrlProvider);
+    final hasBaseUrl = baseUrl != null && baseUrl.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -120,68 +45,70 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // API配置导航卡片
             Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
+              child: ListTile(
+                leading: Icon(
+                  Icons.api,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: const Text('API配置'),
+                subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.key,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'API密钥配置',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _apiKeyController,
-                      obscureText: _isObscured,
-                      decoration: InputDecoration(
-                        labelText: '硅基流动API密钥',
-                        hintText: '请输入您的API密钥',
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(_isObscured ? Icons.visibility : Icons.visibility_off),
-                          onPressed: () => setState(() => _isObscured = !_isObscured),
-                        ),
+                    Text(
+                      hasApiKey ? '✓ 已配置API密钥' : '✗ 未配置API密钥',
+                      style: TextStyle(
+                        color: hasApiKey ? Colors.green : Colors.red,
+                        fontWeight: hasApiKey ? FontWeight.normal : FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _saveApiKey,
-                            icon: const Icon(Icons.save),
-                            label: const Text('保存'),
-                          ),
-                        ),
-                        if (hasApiKey) ...[
-                          const SizedBox(width: 12),
-                          ElevatedButton.icon(
-                            onPressed: _deleteApiKey,
-                            icon: const Icon(Icons.delete),
-                            label: const Text('删除'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.error,
-                              foregroundColor: Theme.of(context).colorScheme.onError,
-                            ),
-                          ),
-                        ],
-                      ],
+                    Text(
+                      hasModel ? '✓ 已配置模型' : '✗ 未配置模型',
+                      style: TextStyle(
+                        color: hasModel ? Colors.green : Colors.red,
+                        fontWeight: hasModel ? FontWeight.normal : FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      hasBaseUrl ? '✓ 已配置基础URL' : '✗ 未配置基础URL',
+                      style: TextStyle(
+                        color: hasBaseUrl ? Colors.green : Colors.red,
+                        fontWeight: hasBaseUrl ? FontWeight.normal : FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (hasApiKey && hasModel && hasBaseUrl)
+                      const Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                        size: 20,
+                      )
+                    else
+                      const Icon(
+                        Icons.warning,
+                        color: Colors.orange,
+                        size: 20,
+                      ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.arrow_forward_ios),
+                  ],
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const ApiConfigScreen(),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 16),
+            // 文化故事设置卡片
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -273,7 +200,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Text('1. 访问硅基流动官网: siliconflow.cn'),
+                    const Text('1. 访问服务提供商官网'),
                     const SizedBox(height: 4),
                     const Text('2. 注册并登录账户'),
                     const SizedBox(height: 4),
@@ -313,8 +240,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const Text('• API密钥使用安全存储技术加密保存'),
                     const SizedBox(height: 4),
                     const Text('• 菜谱数据仅存储在本地设备'),
-                    const SizedBox(height: 4),
-                    const Text('• 不会收集或上传您的个人信息'),
                   ],
                 ),
               ),

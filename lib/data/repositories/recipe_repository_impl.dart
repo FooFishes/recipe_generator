@@ -3,6 +3,7 @@ import 'package:recipe_generator/data/models/recipe_model.dart';
 import 'package:recipe_generator/data/services/api/recipe_api_service.dart';
 import 'package:recipe_generator/data/services/storage/api_key_service.dart';
 import 'package:recipe_generator/data/services/storage/database_service.dart';
+import 'package:recipe_generator/data/services/storage/settings_service.dart';
 import 'package:recipe_generator/domain/entities/recipe.dart';
 import 'package:recipe_generator/domain/repositories/recipe_repository.dart';
 
@@ -10,11 +11,13 @@ class RecipeRepositoryImpl implements RecipeRepository {
   final RecipeApiService _recipeApiService;
   final ApiKeyService _apiKeyService;
   final DatabaseService _databaseService;
+  final SettingsService _settingsService;
 
   RecipeRepositoryImpl(
     this._recipeApiService,
     this._apiKeyService,
     this._databaseService,
+    this._settingsService,
   );
 
   @override
@@ -24,11 +27,24 @@ class RecipeRepositoryImpl implements RecipeRepository {
       throw Exception('API密钥未设置，请先设置API密钥');
     }
 
+    // 获取配置的模型和baseUrl，必须由用户配置
+    final model = await _settingsService.getModel();
+    if (model == null || model.isEmpty) {
+      throw Exception('模型名称未设置，请先在设置中配置模型名称');
+    }
+
+    final baseUrl = await _settingsService.getBaseUrl();
+    if (baseUrl == null || baseUrl.isEmpty) {
+      throw Exception('基础URL未设置，请先在设置中配置基础URL');
+    }
+
     try {
       final recipes = await _recipeApiService.generateRecipes(
         ingredients,
-        apiKey, 
-        forceCulturalStory: forceCulturalStory
+        apiKey,
+        forceCulturalStory: forceCulturalStory,
+        model: model,
+        baseUrl: baseUrl,
       );
 
       if (recipes.isEmpty) {

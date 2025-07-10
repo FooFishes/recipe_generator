@@ -42,7 +42,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final apiKey = ref.watch(apiKeyProvider);
     final hasApiKey = apiKey != null && apiKey.isNotEmpty;
+    final model = ref.watch(modelProvider);
+    final hasModel = model != null && model.isNotEmpty;
+    final baseUrl = ref.watch(baseUrlProvider);
+    final hasBaseUrl = baseUrl != null && baseUrl.isNotEmpty;
     final culturalStoryEnabled = ref.watch(culturalStoryProvider);
+
+    // 检查是否所有配置都完成
+    final isFullyConfigured = hasApiKey && hasModel && hasBaseUrl;
 
     return Scaffold(
       appBar: AppBar(
@@ -63,7 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (!hasApiKey) ...[
+              if (!isFullyConfigured) ...[
                 Card(
                   color: Theme.of(context).colorScheme.errorContainer,
                   child: Padding(
@@ -77,14 +84,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'API密钥未设置',
+                          '配置未完成',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Theme.of(context).colorScheme.error,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!hasApiKey)
+                              Text(
+                                '• 未配置API密钥',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            if (!hasModel)
+                              Text(
+                                '• 未配置模型名称',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            if (!hasBaseUrl)
+                              Text(
+                                '• 未配置基础URL',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
                         const Text(
-                          '请先在设置中配置硅基流动API密钥',
+                          '请先在设置中完成所有配置',
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
@@ -137,7 +174,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: hasApiKey ? _generateRecipes : null,
+                          onPressed: isFullyConfigured ? _generateRecipes : null,
                           icon: const Icon(Icons.auto_awesome),
                           label: Text(culturalStoryEnabled ? '生成菜谱（含文化故事）' : '生成菜谱'),
                           style: ElevatedButton.styleFrom(

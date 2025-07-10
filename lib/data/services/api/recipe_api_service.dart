@@ -5,8 +5,6 @@ import 'package:recipe_generator/data/services/recipe_util/recipe_prompt_builder
 import 'package:recipe_generator/domain/entities/recipe.dart';
 
 class RecipeApiService {
-  static const String _baseUrl = 'https://yunwi.ai/vi/chat/completions';
-  static const String _model = 'gemini-2.5-flash';
   final Dio _dio;
   RecipeApiService(this._dio);
 
@@ -14,13 +12,15 @@ class RecipeApiService {
     String ingredients,
     String apiKey, {
     bool forceCulturalStory = false,
+    required String model,
+    required String baseUrl,
   }) async {
     try {
-      final requestData = _buildRequestBody(ingredients, forceCulturalStory,);
+      final requestData = _buildRequestBody(ingredients, forceCulturalStory, model);
       final requestOptions = _buildRequestOptions(apiKey);
 
       final response = await _dio.post(
-        _baseUrl,
+        baseUrl,
         data: requestData,
         options: requestOptions,
       );
@@ -34,7 +34,17 @@ class RecipeApiService {
         throw Exception('API响应格式错误：缺少choices字段');
       }
 
-      final recipes = RecipeDataParser.parseRecipes(responseData);
+      // 提取AI返回的内容字符串
+      final choices = responseData['choices'] as List;
+      if (choices.isEmpty) {
+        throw Exception('API响应格式错误：choices列表为空');
+      }
+
+      final firstChoice = choices[0] as Map<String, dynamic>;
+      final message = firstChoice['message'] as Map<String, dynamic>;
+      final content = message['content'] as String;
+
+      final recipes = RecipeDataParser.parseRecipes(content);
       return recipes;
     } on DioException catch (dioException) {
       final error = NetworkErrorHandler.handleDioError(dioException);
@@ -47,12 +57,13 @@ class RecipeApiService {
   Map<String, dynamic> _buildRequestBody(
     String ingredients,
     bool forceCulturalStory,
+    String model,
   ) {
     final systemContent = RecipePromptBuilder.buildSystemPrompt(
       forceCulturalStory: forceCulturalStory,
     );
     return {
-      'model': _model,
+      'model': model,
       'messages': [
         {
           'role': 'system',

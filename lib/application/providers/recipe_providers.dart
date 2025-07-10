@@ -37,7 +37,8 @@ final recipeRepositoryProvider = Provider<RecipeRepository>((ref) {
   final recipeApiService = ref.watch(recipeApiServiceProvider);
   final apiKeyService = ref.watch(apiKeyServiceProvider);
   final databaseService = ref.watch(databaseServiceProvider);
-  return RecipeRepositoryImpl(recipeApiService, apiKeyService, databaseService);
+  final settingsService = ref.watch(settingsServiceProvider);
+  return RecipeRepositoryImpl(recipeApiService, apiKeyService, databaseService, settingsService);
 });
 
 final recipesProvider = StateNotifierProvider<RecipesNotifier, RecipesState>((ref) {
@@ -229,10 +230,10 @@ class CulturalStoryNotifier extends StateNotifier<bool> {
   final SettingsService _service;
 
   CulturalStoryNotifier(this._service) : super(false) {
-    loadSetting();
+    loadCulturalStory();
   }
 
-  Future<void> loadSetting() async {
+  Future<void> loadCulturalStory() async {
     final enabled = await _service.getCulturalStoryEnabled();
     state = enabled;
   }
@@ -246,5 +247,51 @@ class CulturalStoryNotifier extends StateNotifier<bool> {
   Future<void> setEnabled(bool enabled) async {
     await _service.setCulturalStoryEnabled(enabled);
     state = enabled;
+  }
+}
+
+final modelProvider = StateNotifierProvider<ModelNotifier, String?>((ref){
+  final service = ref.watch(settingsServiceProvider);
+  return ModelNotifier(service);
+});
+
+final baseUrlProvider = StateNotifierProvider<BaseUrlNotifier, String?>((ref){
+  final service = ref.watch(settingsServiceProvider);
+  return BaseUrlNotifier(service);
+});
+
+class ModelNotifier extends StateNotifier<String?> {
+  final SettingsService _service;
+
+  ModelNotifier(this._service) : super(null) {
+    loadModel();
+  }
+
+  Future<void> loadModel() async {
+    final model = await _service.getModel();
+    state = model;
+  }
+
+  Future<void> setModel(String model) async {
+    await _service.setModel(model);
+    state = model;
+  }
+}
+
+class BaseUrlNotifier extends StateNotifier<String?> {
+  final SettingsService _service;
+
+  BaseUrlNotifier(this._service) : super(null) {
+    loadBaseUrl();
+  }
+
+  Future<void> loadBaseUrl() async {
+    final baseUrl = await _service.getBaseUrl();
+    state = baseUrl;
+  }
+
+  Future<void> setBaseUrl(String baseUrl) async {
+    await _service.setBaseUrl(baseUrl);
+    state = baseUrl;
   }
 }
