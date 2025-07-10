@@ -26,15 +26,23 @@ class DatabaseService {
 
   Future<void> toggleFavorite(String recipeId) async {
     final box = await instance;
-    final recipe = box.values.firstWhere((recipe) => recipe.recipeId == recipeId);
-    recipe.isFavorite = !recipe.isFavorite;
-    await recipe.save();
+    try {
+      final recipe = box.values.firstWhere((recipe) => recipe.recipeId == recipeId);
+      recipe.isFavorite = !recipe.isFavorite;
+      await recipe.save();
+    } catch (e) {
+      throw Exception('菜谱未找到，无法切换收藏状态: $recipeId');
+    }
   }
 
   Future<void> deleteRecipe(String recipeId) async {
     final box = await instance;
-    final recipe = box.values.firstWhere((recipe) => recipe.recipeId == recipeId);
-    await recipe.delete();
+    try {
+      final recipe = box.values.firstWhere((recipe) => recipe.recipeId == recipeId);
+      await recipe.delete();
+    } catch (e) {
+      throw Exception('菜谱未找到，无法删除: $recipeId');
+    }
   }
 
   Future<void> clearAllFavorites() async {
@@ -44,9 +52,27 @@ class DatabaseService {
 
   Future<bool> isRecipeFavorite(String recipeId) async {
     final box = await instance;
-    final recipe = box.values.firstWhere(
-      (recipe) => recipe.recipeId == recipeId,
-    );
-    return recipe.isFavorite;
+    try {
+      final recipe = box.values.firstWhere(
+        (recipe) => recipe.recipeId == recipeId,
+      );
+      return recipe.isFavorite;
+    } catch (e) {
+      // 如果找不到菜谱，返回false（未收藏）
+      return false;
+    }
+  }
+
+  Future<RecipeModel?> getRecipeById(String recipeId) async {
+    final box = await instance;
+    try {
+      final recipe = box.values.firstWhere(
+        (recipe) => recipe.recipeId == recipeId,
+      );
+      return recipe;
+    } catch (e) {
+      // 如果找不到菜谱，返回null
+      return null;
+    }
   }
 }

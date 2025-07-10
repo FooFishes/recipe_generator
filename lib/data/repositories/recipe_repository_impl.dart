@@ -61,6 +61,16 @@ class RecipeRepositoryImpl implements RecipeRepository {
       throw Exception('获取收藏菜谱失败: ${e.toString()}');
     }
   }
+
+  @override
+  Future<Recipe?> getRecipeById(String recipeId) async {
+    try {
+      final recipeModel = await _databaseService.getRecipeById(recipeId);
+      return recipeModel?.toDomain();
+    } catch (e) {
+      throw Exception('获取菜谱失败: ${e.toString()}');
+    }
+  }
   
   @override
   Future<bool> isRecipeFavorite(String recipeId) async{

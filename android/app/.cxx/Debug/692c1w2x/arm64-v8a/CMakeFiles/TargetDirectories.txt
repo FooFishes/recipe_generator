@@ -1,0 +1,2 @@
+E:/GitHub/recipe_generator/android/app/.cxx/Debug/692c1w2x/arm64-v8a/CMakeFiles/edit_cache.dir
+E:/GitHub/recipe_generator/android/app/.cxx/Debug/692c1w2x/arm64-v8a/CMakeFiles/rebuild_cache.dir

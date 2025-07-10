@@ -3,6 +3,7 @@ import 'package:recipe_generator/domain/entities/recipe.dart';
 abstract class RecipeRepository {
   Future<List<Recipe>> generateRecipes(String ingredients, {bool forceCulturalStory = false});
   Future<List<Recipe>> getFavoriteRecipes();
+  Future<Recipe?> getRecipeById(String recipeId);
   Future<void> saveFavoriteRecipe(Recipe recipe);
   Future<void> removeFavoriteRecipe(String recipeId);
   Future<void> toggleFavoriteRecipe(String recipeId);
