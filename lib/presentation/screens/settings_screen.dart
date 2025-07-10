@@ -58,23 +58,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      hasApiKey ? '✓ 已配置API密钥' : '✗ 未配置API密钥',
+                      hasApiKey ? '✓ 已配置API密钥' : '  未配置API密钥',
                       style: TextStyle(
-                        color: hasApiKey ? Colors.green : Colors.red,
+                        color: hasApiKey ? Colors.lightGreen : Colors.red.shade300,
                         fontWeight: hasApiKey ? FontWeight.normal : FontWeight.bold,
                       ),
                     ),
                     Text(
-                      hasModel ? '✓ 已配置模型' : '✗ 未配置模型',
+                      hasModel ? '✓ 已配置模型' : '  未配置模型',
                       style: TextStyle(
-                        color: hasModel ? Colors.green : Colors.red,
+                        color: hasModel ? Colors.lightGreen : Colors.red.shade300,
                         fontWeight: hasModel ? FontWeight.normal : FontWeight.bold,
                       ),
                     ),
                     Text(
-                      hasBaseUrl ? '✓ 已配置基础URL' : '✗ 未配置基础URL',
+                      hasBaseUrl ? '✓ 已配置基础URL' : '  未配置基础URL',
                       style: TextStyle(
-                        color: hasBaseUrl ? Colors.green : Colors.red,
+                        color: hasBaseUrl ? Colors.lightGreen : Colors.red.shade300,
                         fontWeight: hasBaseUrl ? FontWeight.normal : FontWeight.bold,
                       ),
                     ),
