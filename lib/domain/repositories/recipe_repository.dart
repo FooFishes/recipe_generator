@@ -4,6 +4,7 @@ import 'package:recipe_generator/domain/entities/recipe_history.dart';
 abstract class RecipeRepository {
   Future<List<Recipe>> generateRecipes(String ingredients, {bool forceCulturalStory = false});
   Future<List<Recipe>> getFavoriteRecipes();
+  Future<List<Recipe>> getAllRecipes();
   Future<Recipe?> getRecipeById(String recipeId);
   Future<void> saveFavoriteRecipe(Recipe recipe);
   Future<void> removeFavoriteRecipe(String recipeId);

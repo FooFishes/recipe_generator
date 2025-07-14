@@ -35,6 +35,11 @@ class DatabaseService {
     return favourites;
   }
 
+  Future<List<RecipeModel>> getAllRecipes() async {
+    final box = await instance;
+    return box.values.toList();
+  }
+
   Future<void> toggleFavorite(String recipeId) async {
     final box = await instance;
     try {
@@ -58,7 +63,13 @@ class DatabaseService {
 
   Future<void> clearAllFavorites() async {
     final box = await instance;
-    await box.clear();
+    final recipes = box.values.toList();
+    for (final recipe in recipes) {
+      if (recipe.isFavorite) {
+        recipe.isFavorite = false;
+        await recipe.save();
+      }
+    }
   }
 
   Future<bool> isRecipeFavorite(String recipeId) async {

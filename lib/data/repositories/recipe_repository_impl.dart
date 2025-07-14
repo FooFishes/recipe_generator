@@ -65,6 +65,15 @@ class RecipeRepositoryImpl implements RecipeRepository {
         throw Exception('API返回了空的菜谱列表');
       }
 
+      // 保存所有生成的菜谱到数据库（不管是否收藏）
+      for (final recipe in recipes) {
+        final existingRecipe = await _databaseService.getRecipeById(recipe.id);
+        if (existingRecipe == null) {
+          final recipeModel = RecipeModel.fromDomain(recipe);
+          await _databaseService.saveRecipe(recipeModel);
+        }
+      }
+
       AppLogger.logMethodExit('RecipeRepositoryImpl', 'generateRecipes', 
           '成功生成${recipes.length}个菜谱');
       return recipes;
@@ -80,7 +89,11 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<void> clearAllFavorites() async{
     try {
-      await _databaseService.clearAllFavorites();
+      final favorites = await _databaseService.getFavoriteRecipes();
+      for (final recipe in favorites) {
+        recipe.isFavorite = false;
+        await recipe.save();
+      }
     } catch (e) {
       throw Exception('清除收藏菜谱失败: ${e.toString()}');
     }
@@ -93,6 +106,16 @@ class RecipeRepositoryImpl implements RecipeRepository {
       return recipeModels.map((model) => model.toDomain()).toList();
     } catch (e) {
       throw Exception('获取收藏菜谱失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<Recipe>> getAllRecipes() async {
+    try {
+      final recipeModels = await _databaseService.getAllRecipes();
+      return recipeModels.map((model) => model.toDomain()).toList();
+    } catch (e) {
+      throw Exception('获取所有菜谱失败: ${e.toString()}');
     }
   }
 
@@ -118,13 +141,17 @@ class RecipeRepositoryImpl implements RecipeRepository {
   
   @override
   Future<void> removeFavoriteRecipe(String recipeId) async {
-    AppLogger.logUserAction('删除收藏菜谱', {'recipeId': recipeId});
+    AppLogger.logUserAction('取消收藏菜谱', {'recipeId': recipeId});
     try {
-      await _databaseService.deleteRecipe(recipeId);
-      AppLogger.info('成功删除收藏菜谱: $recipeId');
+      final existingRecipe = await _databaseService.getRecipeById(recipeId);
+      if (existingRecipe != null && existingRecipe.isFavorite) {
+        existingRecipe.isFavorite = false;
+        await existingRecipe.save();
+      }
+      AppLogger.info('成功取消收藏菜谱: $recipeId');
     } catch (e, stackTrace) {
-      AppLogger.error('删除收藏菜谱失败', e, stackTrace);
-      throw Exception('删除收藏菜谱失败: ${e.toString()}');
+      AppLogger.error('取消收藏菜谱失败', e, stackTrace);
+      throw Exception('取消收藏菜谱失败: ${e.toString()}');
     }
   }
   
@@ -132,10 +159,21 @@ class RecipeRepositoryImpl implements RecipeRepository {
   Future<void> saveFavoriteRecipe(Recipe recipe) async {
     AppLogger.logUserAction('保存收藏菜谱', {'recipeId': recipe.id, 'recipeName': recipe.name});
     try {
-      final recipeModel = RecipeModel.fromDomain(recipe.copyWith(
-        isFavorite: true,
-      ));
-      await _databaseService.saveRecipe(recipeModel);
+      // 检查菜谱是否已存在
+      final existingRecipe = await _databaseService.getRecipeById(recipe.id);
+      if (existingRecipe != null) {
+        // 如果已存在且未收藏，则设为收藏
+        if (!existingRecipe.isFavorite) {
+          existingRecipe.isFavorite = true;
+          await existingRecipe.save();
+        }
+      } else {
+        // 如果不存在，保存新的菜谱并设为收藏
+        final recipeModel = RecipeModel.fromDomain(recipe.copyWith(
+          isFavorite: true,
+        ));
+        await _databaseService.saveRecipe(recipeModel);
+      }
       AppLogger.info('成功保存收藏菜谱: ${recipe.name}');
     } catch (e, stackTrace) {
       AppLogger.error('保存收藏菜谱失败', e, stackTrace);
