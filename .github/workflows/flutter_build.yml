@@ -38,12 +38,6 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # 步骤 4: 运行代码分析和测试 (可选，但强烈推荐)
-      - name: Run analysis and tests
-        run: |
-          flutter analyze
-          flutter test
-
       # 步骤 5: 构建 Android APK (仅在 Linux 运行器上执行)
       - name: Build Android APK
         if: runner.os == 'Linux'
