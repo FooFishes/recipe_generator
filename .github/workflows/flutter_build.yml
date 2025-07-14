@@ -1,6 +1,6 @@
 # .github/workflows/build_flutter_app.yml
 
-name: Build Flutter App
+name: Build Flutter App with Analyze and Test
 
 # 触发工作流程的事件：推送到 main 分支或向 main 分支发起 Pull Request 时
 on:
@@ -84,4 +84,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: build/windows/runner/Release/ # Windows 构建输出的目录
+          path: build/windows/x64/runner/Release/ # Windows 构建输出的目录
