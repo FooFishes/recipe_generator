@@ -247,7 +247,7 @@ class _LogExportScreenState extends State<LogExportScreen> {
                             child: ElevatedButton.icon(
                               onPressed: (kIsWeb ? _webLogBuffer.isEmpty : _logFiles.isEmpty) ? null : _exportLogs,
                               icon: const Icon(Icons.download),
-                              label: Text(kIsWeb ? '保存到浏览器存储' : '导出所有日志'),
+                              label: const Text(kIsWeb ? '保存到浏览器存储' : '导出所有日志'),
                             ),
                           ),
                         ],

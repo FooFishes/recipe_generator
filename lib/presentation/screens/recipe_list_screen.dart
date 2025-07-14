@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../application/providers/recipe_providers.dart';
+import '../../core/ui/responsive_utils.dart';
 import '../widgets/recipe_card.dart';
 
 class RecipeListScreen extends ConsumerStatefulWidget {
@@ -46,21 +47,23 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16.0),
+            padding: ResponsiveUtils.getResponsivePadding(context),
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '食材：',
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.ingredients,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-              ],
+            child: ResponsiveContainer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '食材：',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context) * 0.25),
+                  Text(
+                    widget.ingredients,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+              ),
             ),
           ),
           Expanded(
@@ -173,19 +176,51 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: state.recipes.length,
-      itemBuilder: (context, index) {
-        final recipe = state.recipes[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
-          child: RecipeCard(
-            recipe: recipe,
-            onTap: () => context.push('/recipe/${recipe.id}'),
-          ),
-        );
-      },
+    return ResponsiveContainer(
+      child: ResponsiveBuilder(
+        builder: (context, deviceType) {
+          // 在大屏幕上使用网格布局
+          if (deviceType == DeviceType.desktop) {
+            return ResponsiveGridView(
+              desktopColumns: 2,
+              tabletColumns: 2,
+              mobileColumns: 1,
+              childAspectRatio: 2.5,
+              children: state.recipes.map((recipe) => RecipeCard(
+                recipe: recipe,
+                onTap: () => context.push('/recipe/${recipe.id}'),
+              )).toList(),
+            );
+          } else if (deviceType == DeviceType.tablet) {
+            return ResponsiveGridView(
+              desktopColumns: 2,
+              tabletColumns: 1,
+              mobileColumns: 1,
+              childAspectRatio: 3.0,
+              children: state.recipes.map((recipe) => RecipeCard(
+                recipe: recipe,
+                onTap: () => context.push('/recipe/${recipe.id}'),
+              )).toList(),
+            );
+          } else {
+            // 移动设备使用列表布局
+            return ListView.builder(
+              padding: ResponsiveUtils.getResponsivePadding(context),
+              itemCount: state.recipes.length,
+              itemBuilder: (context, index) {
+                final recipe = state.recipes[index];
+                return Padding(
+                  padding: EdgeInsets.only(bottom: ResponsiveUtils.getResponsiveSpacing(context)),
+                  child: RecipeCard(
+                    recipe: recipe,
+                    onTap: () => context.push('/recipe/${recipe.id}'),
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
     );
   }
 }

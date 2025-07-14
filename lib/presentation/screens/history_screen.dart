@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../application/providers/recipe_providers.dart';
 import '../../domain/entities/recipe_history.dart';
+import '../../core/ui/responsive_utils.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -29,7 +30,9 @@ class HistoryScreen extends ConsumerWidget {
         onRefresh: () async {
           await ref.read(historyProvider.notifier).loadHistory();
         },
-        child: _buildContent(context, ref, history),
+        child: ResponsiveContainer(
+          child: _buildContent(context, ref, history),
+        ),
       ),
     );
   }
@@ -38,31 +41,38 @@ class HistoryScreen extends ConsumerWidget {
     if (history.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: ResponsiveUtils.getResponsivePadding(context),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.history,
-                size: 80,
+                size: ResponsiveUtils.getResponsiveValue(
+                  context,
+                  mobile: 80.0,
+                  tablet: 100.0,
+                  desktop: 120.0,
+                ),
                 color: Colors.grey[400],
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
               Text(
                 '暂无生成记录',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: Colors.grey[600],
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context, 24),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context) * 0.5),
               Text(
                 '在首页生成菜谱后，历史记录将显示在这里',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context) * 1.5),
               ElevatedButton.icon(
                 onPressed: () => context.go('/home'),
                 icon: const Icon(Icons.home),
@@ -74,37 +84,58 @@ class HistoryScreen extends ConsumerWidget {
       );
     }
 
+    return ResponsiveBuilder(
+      builder: (context, deviceType) {
+        if (ResponsiveUtils.isLargeScreen(context)) {
+          // 大屏幕使用网格布局
+          return _buildGridLayout(context, ref, history);
+        } else {
+          // 小屏幕使用列表布局
+          return _buildListLayout(context, ref, history);
+        }
+      },
+    );
+  }
+
+  Widget _buildListLayout(BuildContext context, WidgetRef ref, List<RecipeHistory> history) {
+    final spacing = ResponsiveUtils.getResponsiveSpacing(context);
+    
     return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
+      padding: ResponsiveUtils.getResponsivePadding(context),
       itemCount: history.length,
       itemBuilder: (context, index) {
         final historyItem = history[index];
         return Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
+          padding: EdgeInsets.only(bottom: spacing),
           child: Dismissible(
             key: Key(historyItem.id),
             direction: DismissDirection.endToStart,
             background: Container(
               alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
+              padding: EdgeInsets.only(right: spacing),
               decoration: BoxDecoration(
                 color: Colors.red,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Column(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.delete,
                     color: Colors.white,
-                    size: 32,
+                    size: ResponsiveUtils.getResponsiveValue(
+                      context,
+                      mobile: 32.0,
+                      tablet: 36.0,
+                      desktop: 40.0,
+                    ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     '删除',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 12,
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
                     ),
                   ),
                 ],
@@ -115,7 +146,7 @@ class HistoryScreen extends ConsumerWidget {
               ref.read(historyProvider.notifier).deleteHistory(historyItem.id);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('已删除历史记录'),
+                  content: const Text('已删除历史记录'),
                   action: SnackBarAction(
                     label: '撤销',
                     onPressed: () {
@@ -132,8 +163,41 @@ class HistoryScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildGridLayout(BuildContext context, WidgetRef ref, List<RecipeHistory> history) {
+    final columns = ResponsiveUtils.getGridColumns(
+      context,
+      mobile: 1,
+      tablet: 2,
+      desktop: 3,
+    );
+    final spacing = ResponsiveUtils.getResponsiveSpacing(context);
+    
+    return Padding(
+      padding: ResponsiveUtils.getResponsivePadding(context),
+      child: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: columns,
+          crossAxisSpacing: spacing,
+          mainAxisSpacing: spacing,
+          childAspectRatio: ResponsiveUtils.getResponsiveValue(
+            context,
+            mobile: 1.2,
+            tablet: 1.1,
+            desktop: 1.0,
+          ),
+        ),
+        itemCount: history.length,
+        itemBuilder: (context, index) {
+          final historyItem = history[index];
+          return _buildHistoryCard(context, historyItem);
+        },
+      ),
+    );
+  }
+
   Widget _buildHistoryCard(BuildContext context, RecipeHistory history) {
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
+    final spacing = ResponsiveUtils.getResponsiveSpacing(context);
     
     return Card(
       elevation: 2,
@@ -144,7 +208,7 @@ class HistoryScreen extends ConsumerWidget {
         onTap: () => context.push('/history/${history.id}'),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(spacing),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -152,7 +216,7 @@ class HistoryScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(spacing * 0.5),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(8),
@@ -160,10 +224,15 @@ class HistoryScreen extends ConsumerWidget {
                     child: Icon(
                       Icons.restaurant,
                       color: Theme.of(context).colorScheme.primary,
-                      size: 20,
+                      size: ResponsiveUtils.getResponsiveValue(
+                        context,
+                        mobile: 20.0,
+                        tablet: 22.0,
+                        desktop: 24.0,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: spacing * 0.75),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,15 +241,17 @@ class HistoryScreen extends ConsumerWidget {
                           '食材：${history.ingredients}',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: spacing * 0.25),
                         Text(
                           '生成时间：${dateFormat.format(history.createdAt)}',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.grey[600],
+                            fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
                           ),
                         ),
                       ],
@@ -188,9 +259,12 @@ class HistoryScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: spacing * 0.75),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(
+                  horizontal: spacing * 0.75,
+                  vertical: spacing * 0.375,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.secondaryContainer,
                   borderRadius: BorderRadius.circular(16),
@@ -199,6 +273,7 @@ class HistoryScreen extends ConsumerWidget {
                   '生成了 ${history.recipeIds.length} 个菜谱',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
                   ),
                 ),
               ),

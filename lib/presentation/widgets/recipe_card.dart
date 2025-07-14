@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/recipe.dart';
 import '../../application/providers/recipe_providers.dart';
+import '../../core/ui/responsive_utils.dart';
 
 class RecipeCard extends ConsumerWidget {
   final Recipe recipe;
@@ -15,12 +16,15 @@ class RecipeCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final responsivePadding = ResponsiveUtils.getResponsiveSpacing(context);
+    final isLargeScreen = ResponsiveUtils.isLargeScreen(context);
+    
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: ResponsiveUtils.getResponsivePadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -35,15 +39,19 @@ class RecipeCard extends ConsumerWidget {
                           recipe.name,
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: ResponsiveUtils.getResponsiveFontSize(context, 18),
                           ),
+                          maxLines: isLargeScreen ? 2 : 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: responsivePadding * 0.25),
                         Text(
                           recipe.description,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.grey[600],
+                            fontSize: ResponsiveUtils.getResponsiveFontSize(context, 14),
                           ),
-                          maxLines: 2,
+                          maxLines: isLargeScreen ? 3 : 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
@@ -57,6 +65,12 @@ class RecipeCard extends ConsumerWidget {
                         icon: Icon(
                           isFavorite ? Icons.favorite : Icons.favorite_border,
                           color: isFavorite ? Colors.red : null,
+                          size: ResponsiveUtils.getResponsiveValue(
+                            context,
+                            mobile: 24.0,
+                            tablet: 28.0,
+                            desktop: 32.0,
+                          ),
                         ),
                         onPressed: () {
                           ref.read(favoritesProvider.notifier).toggleFavorite(recipe);
@@ -66,10 +80,20 @@ class RecipeCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: responsivePadding * 0.75),
               Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
+                spacing: ResponsiveUtils.getResponsiveValue(
+                  context,
+                  mobile: 8.0,
+                  tablet: 10.0,
+                  desktop: 12.0,
+                ),
+                runSpacing: ResponsiveUtils.getResponsiveValue(
+                  context,
+                  mobile: 4.0,
+                  tablet: 6.0,
+                  desktop: 8.0,
+                ),
                 children: [
                   _buildInfoChip(
                     context,
@@ -101,23 +125,34 @@ class RecipeCard extends ConsumerWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: responsivePadding * 0.75),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.local_fire_department,
-                    size: 16,
+                    size: ResponsiveUtils.getResponsiveValue(
+                      context,
+                      mobile: 16.0,
+                      tablet: 18.0,
+                      desktop: 20.0,
+                    ),
                     color: Colors.orange,
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: responsivePadding * 0.25),
                   Text(
                     '${recipe.nutrition.calories.toInt()}卡路里',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
+                      color: Colors.grey[600],
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     '蛋白质${recipe.nutrition.protein.toInt()}g',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
+                      color: Colors.grey[600],
+                    ),
                   ),
                 ],
               ),
@@ -134,8 +169,25 @@ class RecipeCard extends ConsumerWidget {
     String label, {
     Color? color,
   }) {
+    final chipPadding = ResponsiveUtils.getResponsiveValue(
+      context,
+      mobile: 8.0,
+      tablet: 10.0,
+      desktop: 12.0,
+    );
+    final iconSize = ResponsiveUtils.getResponsiveValue(
+      context,
+      mobile: 14.0,
+      tablet: 16.0,
+      desktop: 18.0,
+    );
+    final fontSize = ResponsiveUtils.getResponsiveFontSize(context, 12);
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: chipPadding,
+        vertical: chipPadding * 0.5,
+      ),
       decoration: BoxDecoration(
         color: (color ?? Theme.of(context).colorScheme.primary).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
@@ -145,14 +197,14 @@ class RecipeCard extends ConsumerWidget {
         children: [
           Icon(
             icon,
-            size: 14,
+            size: iconSize,
             color: color ?? Theme.of(context).colorScheme.primary,
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: chipPadding * 0.5),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: fontSize,
               color: color ?? Theme.of(context).colorScheme.primary,
             ),
           ),
