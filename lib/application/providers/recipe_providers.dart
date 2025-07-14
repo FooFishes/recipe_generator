@@ -6,6 +6,7 @@ import 'package:recipe_generator/data/services/storage/api_key_service.dart';
 import 'package:recipe_generator/data/services/storage/database_service.dart';
 import 'package:recipe_generator/data/services/storage/settings_service.dart';
 import 'package:recipe_generator/domain/entities/recipe.dart';
+import 'package:recipe_generator/domain/entities/recipe_history.dart';
 import 'package:recipe_generator/domain/repositories/recipe_repository.dart';
 
 final dioProvider = Provider<Dio>((ref) {
@@ -43,7 +44,8 @@ final recipeRepositoryProvider = Provider<RecipeRepository>((ref) {
 
 final recipesProvider = StateNotifierProvider<RecipesNotifier, RecipesState>((ref) {
   final repository = ref.watch(recipeRepositoryProvider);
-  return RecipesNotifier(repository);
+  final historyNotifier = ref.read(historyProvider.notifier);
+  return RecipesNotifier(repository, historyNotifier);
 });
 
 class RecipesState {
@@ -72,14 +74,21 @@ class RecipesState {
 
 class RecipesNotifier extends StateNotifier<RecipesState> {
   final RecipeRepository _repository;
+  final HistoryNotifier _historyNotifier;
 
-  RecipesNotifier(this._repository) : super(const RecipesState());
+  RecipesNotifier(this._repository, this._historyNotifier) : super(const RecipesState());
 
   Future<void> generateRecipes(String ingredients, {bool forceCulturalStory = false}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final recipes = await _repository.generateRecipes(ingredients, forceCulturalStory: forceCulturalStory);
       state = state.copyWith(recipes: recipes, isLoading: false);
+      
+      // 保存历史记录
+      if (recipes.isNotEmpty) {
+        final recipeIds = recipes.map((recipe) => recipe.id).toList();
+        await _historyNotifier.saveHistory(ingredients, recipeIds);
+      }
     } catch (e) {
       String errorMessage = e.toString();
      
@@ -293,5 +302,60 @@ class BaseUrlNotifier extends StateNotifier<String?> {
   Future<void> setBaseUrl(String baseUrl) async {
     await _service.setBaseUrl(baseUrl);
     state = baseUrl;
+  }
+}
+
+final historyProvider = StateNotifierProvider<HistoryNotifier, List<RecipeHistory>>((ref) {
+  final repository = ref.watch(recipeRepositoryProvider);
+  return HistoryNotifier(repository);
+});
+
+class HistoryNotifier extends StateNotifier<List<RecipeHistory>> {
+  final RecipeRepository _repository;
+
+  HistoryNotifier(this._repository) : super([]) {
+    loadHistory();
+  }
+
+  Future<void> loadHistory() async {
+    try {
+      final history = await _repository.getRecipeHistory();
+      state = history;
+    } catch (e) {
+      state = [];
+    }
+  }
+
+  Future<void> saveHistory(String ingredients, List<String> recipeIds) async {
+    try {
+      final history = RecipeHistory(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        ingredients: ingredients,
+        createdAt: DateTime.now(),
+        recipeIds: recipeIds,
+      );
+      await _repository.saveRecipeHistory(history);
+      state = [history, ...state];
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> deleteHistory(String historyId) async {
+    try {
+      await _repository.deleteRecipeHistory(historyId);
+      state = state.where((h) => h.id != historyId).toList();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> clearAllHistory() async {
+    try {
+      await _repository.clearAllHistory();
+      state = [];
+    } catch (e) {
+      // Handle error
+    }
   }
 }

@@ -6,7 +6,9 @@ import 'package:recipe_generator/data/services/storage/api_key_service.dart';
 import 'package:recipe_generator/data/services/storage/database_service.dart';
 import 'package:recipe_generator/data/services/storage/settings_service.dart';
 import 'package:recipe_generator/domain/entities/recipe.dart';
+import 'package:recipe_generator/domain/entities/recipe_history.dart';
 import 'package:recipe_generator/domain/repositories/recipe_repository.dart';
+import 'package:recipe_generator/data/models/recipe_history_model.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
   final RecipeApiService _recipeApiService;
@@ -147,6 +149,53 @@ class RecipeRepositoryImpl implements RecipeRepository {
       await _databaseService.toggleFavorite(recipeId);
     } catch (e) {
       throw Exception('切换收藏菜谱失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> saveRecipeHistory(RecipeHistory history) async {
+    AppLogger.logUserAction('保存菜谱历史记录', {'historyId': history.id, 'ingredients': history.ingredients});
+    try {
+      final historyModel = RecipeHistoryModel.fromDomain(history);
+      await _databaseService.saveRecipeHistory(historyModel);
+      AppLogger.info('成功保存菜谱历史记录: ${history.ingredients}');
+    } catch (e, stackTrace) {
+      AppLogger.error('保存菜谱历史记录失败', e, stackTrace);
+      throw Exception('保存菜谱历史记录失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<RecipeHistory>> getRecipeHistory() async {
+    try {
+      final historyModels = await _databaseService.getRecipeHistory();
+      return historyModels.map((model) => model.toDomain()).toList();
+    } catch (e) {
+      throw Exception('获取菜谱历史记录失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> deleteRecipeHistory(String historyId) async {
+    AppLogger.logUserAction('删除菜谱历史记录', {'historyId': historyId});
+    try {
+      await _databaseService.deleteRecipeHistory(historyId);
+      AppLogger.info('成功删除菜谱历史记录: $historyId');
+    } catch (e, stackTrace) {
+      AppLogger.error('删除菜谱历史记录失败', e, stackTrace);
+      throw Exception('删除菜谱历史记录失败: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> clearAllHistory() async {
+    AppLogger.logUserAction('清空所有菜谱历史记录', {});
+    try {
+      await _databaseService.clearAllHistory();
+      AppLogger.info('成功清空所有菜谱历史记录');
+    } catch (e, stackTrace) {
+      AppLogger.error('清空菜谱历史记录失败', e, stackTrace);
+      throw Exception('清空菜谱历史记录失败: ${e.toString()}');
     }
   }
 }

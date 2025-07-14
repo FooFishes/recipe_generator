@@ -4,6 +4,8 @@ import '../../presentation/screens/home_screen.dart';
 import '../../presentation/screens/recipe_list_screen.dart';
 import '../../presentation/screens/recipe_detail_screen.dart';
 import '../../presentation/screens/favorites_screen.dart';
+import '../../presentation/screens/history_screen.dart';
+import '../../presentation/screens/history_detail_screen.dart';
 import '../../presentation/screens/settings_screen.dart';
 import '../../presentation/screens/log_export_screen.dart';
 
@@ -25,6 +27,10 @@ final appRouter = GoRouter(
                 label: '收藏',
               ),
               NavigationDestination(
+                icon: Icon(Icons.history),
+                label: '历史',
+              ),
+              NavigationDestination(
                 icon: Icon(Icons.settings),
                 label: '设置',
               ),
@@ -39,6 +45,9 @@ final appRouter = GoRouter(
                   context.go('/favorites');
                   break;
                 case 2:
+                  context.go('/history');
+                  break;
+                case 3:
                   context.go('/settings');
                   break;
               }
@@ -54,6 +63,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/favorites',
           builder: (context, state) => const FavoritesScreen(),
+        ),
+        GoRoute(
+          path: '/history',
+          builder: (context, state) => const HistoryScreen(),
         ),
         GoRoute(
           path: '/settings',
@@ -82,6 +95,13 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: '/history/:id',
+      builder: (context, state) {
+        final historyId = state.pathParameters['id']!;
+        return HistoryDetailScreen(historyId: historyId);
+      },
+    ),
+    GoRoute(
       path: '/logs',
       builder: (context, state) => const LogExportScreen(),
     ),
@@ -94,8 +114,10 @@ int _getSelectedIndex(String path) {
       return 0;
     case '/favorites':
       return 1;
-    case '/settings':
+    case '/history':
       return 2;
+    case '/settings':
+      return 3;
     default:
       return 0;
   }

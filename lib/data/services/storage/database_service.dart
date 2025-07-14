@@ -1,8 +1,10 @@
 import 'package:hive/hive.dart';
 import 'package:recipe_generator/data/models/recipe_model.dart';
+import 'package:recipe_generator/data/models/recipe_history_model.dart';
 
 class DatabaseService {
   static Box<RecipeModel>? _recipeBox;
+  static Box<RecipeHistoryModel>? _historyBox;
 
   static Future<Box<RecipeModel>> get instance async{
     if(_recipeBox != null) {
@@ -11,6 +13,15 @@ class DatabaseService {
     Hive.registerAdapter(RecipeModelAdapter());
     _recipeBox = await Hive.openBox<RecipeModel>('recipes');
     return _recipeBox!;
+  }
+
+  static Future<Box<RecipeHistoryModel>> get historyInstance async{
+    if(_historyBox != null) {
+      return _historyBox!;
+    }
+    Hive.registerAdapter(RecipeHistoryModelAdapter());
+    _historyBox = await Hive.openBox<RecipeHistoryModel>('recipe_history');
+    return _historyBox!;
   }
 
   Future<void> saveRecipe(RecipeModel recipe) async {
@@ -74,5 +85,32 @@ class DatabaseService {
       // 如果找不到菜谱，返回null
       return null;
     }
+  }
+
+  Future<void> saveRecipeHistory(RecipeHistoryModel history) async {
+    final box = await historyInstance;
+    await box.add(history);
+  }
+
+  Future<List<RecipeHistoryModel>> getRecipeHistory() async {
+    final box = await historyInstance;
+    final historyList = box.values.toList();
+    historyList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return historyList;
+  }
+
+  Future<void> deleteRecipeHistory(String historyId) async {
+    final box = await historyInstance;
+    try {
+      final history = box.values.firstWhere((history) => history.id == historyId);
+      await history.delete();
+    } catch (e) {
+      throw Exception('历史记录未找到，无法删除: $historyId');
+    }
+  }
+
+  Future<void> clearAllHistory() async {
+    final box = await historyInstance;
+    await box.clear();
   }
 }
