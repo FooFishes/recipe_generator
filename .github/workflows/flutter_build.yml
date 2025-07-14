@@ -45,9 +45,9 @@ jobs:
           flutter test
 
       # 步骤 5: 构建 Android APK (仅在 Linux 运行器上执行)
-      - name: Build Android APK
-        if: runner.os == 'Linux'
-        run: flutter build apk --release
+      # - name: Build Android APK
+      #   if: runner.os == 'Linux'
+      #   run: flutter build apk --release
 
       # 步骤 6: 构建 Web 应用 (仅在 Linux 运行器上执行)
       - name: Build Web
