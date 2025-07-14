@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:recipe_generator/presentation/screens/network_diagnostics_screen.dart';
 import '../../application/providers/recipe_providers.dart';
 import 'api_config_screen.dart';
@@ -282,6 +283,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const Text('• API密钥使用安全存储技术加密保存'),
                     const SizedBox(height: 4),
                     const Text('• 菜谱数据仅存储在本地设备'),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.bug_report,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '日志管理',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Text('查看和导出应用日志，用于问题诊断和反馈'),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          context.push('/logs');
+                        },
+                        icon: const Icon(Icons.download),
+                        label: const Text('日志导出'),
+                      ),
+                    ),
                   ],
                 ),
               ),

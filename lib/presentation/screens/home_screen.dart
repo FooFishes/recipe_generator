@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../application/providers/recipe_providers.dart';
+import '../../core/logging/app_logger.dart';
 
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -18,6 +19,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    AppLogger.info('HomeScreen初始化');
   }
 
   @override
@@ -31,10 +33,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final ingredients = _ingredientsController.text.trim();
       final culturalStoryEnabled = ref.read(culturalStoryProvider);
       
+      AppLogger.logUserAction('生成菜谱', {
+        'ingredients': ingredients,
+        'culturalStoryEnabled': culturalStoryEnabled,
+      });
+      
       context.push('/recipes', extra: {
         'ingredients': ingredients,
         'forceCulturalStory': culturalStoryEnabled,
       });
+    } else {
+      AppLogger.warning('表单验证失败，无法生成菜谱');
     }
   }
 

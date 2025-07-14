@@ -1,13 +1,22 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'core/config/app_router.dart';
+import 'core/logging/app_logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // 初始化日志系统
+  await AppLogger.initialize();
+  AppLogger.info('Application starting...');
+  AppLogger.debug('Debug mode: ${kDebugMode ? 'enabled' : 'disabled'}');
+  AppLogger.info('Platform: ${kIsWeb ? 'Web' : 'Mobile'}');
+  
   // 初始化 Hive
   await Hive.initFlutter();
+  AppLogger.info('Hive initialized');
   
   runApp(const ProviderScope(child: MainApp()));
 }

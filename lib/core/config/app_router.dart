@@ -5,6 +5,7 @@ import '../../presentation/screens/recipe_list_screen.dart';
 import '../../presentation/screens/recipe_detail_screen.dart';
 import '../../presentation/screens/favorites_screen.dart';
 import '../../presentation/screens/settings_screen.dart';
+import '../../presentation/screens/log_export_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/home',
@@ -79,6 +80,10 @@ final appRouter = GoRouter(
         final recipeId = state.pathParameters['id']!;
         return RecipeDetailScreen(recipeId: recipeId);
       },
+    ),
+    GoRoute(
+      path: '/logs',
+      builder: (context, state) => const LogExportScreen(),
     ),
   ],
 );

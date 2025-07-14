@@ -45,5 +45,30 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- 网络安全配置 - 允许HTTPS连接到API服务器 -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- 允许任意HTTPS连接 -->
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<!-- 针对特定域名的配置 -->
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>openai.com</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+			</dict>
+			<key>api.openai.com</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+			</dict>
+		</dict>
+	</dict>
 </dict>
 </plist>
