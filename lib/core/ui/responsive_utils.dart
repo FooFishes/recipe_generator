@@ -152,9 +152,9 @@ class ResponsiveBuilder extends StatelessWidget {
   final Widget Function(BuildContext context, DeviceType deviceType) builder;
   
   const ResponsiveBuilder({
-    Key? key,
+    super.key,
     required this.builder,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -170,12 +170,12 @@ class ResponsiveContainer extends StatelessWidget {
   final EdgeInsets? padding;
   
   const ResponsiveContainer({
-    Key? key,
+    super.key,
     required this.child,
     this.maxWidth,
     this.centerContent = true,
     this.padding,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -209,7 +209,7 @@ class ResponsiveGridView extends StatelessWidget {
   final bool shrinkWrap;
   
   const ResponsiveGridView({
-    Key? key,
+    super.key,
     required this.children,
     this.mobileColumns,
     this.tabletColumns,
@@ -219,7 +219,7 @@ class ResponsiveGridView extends StatelessWidget {
     this.childAspectRatio,
     this.physics,
     this.shrinkWrap = false,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -256,7 +256,7 @@ class ResponsiveListView extends StatelessWidget {
   final bool shrinkWrap;
   
   const ResponsiveListView({
-    Key? key,
+    super.key,
     required this.children,
     this.useGrid = false,
     this.mobileColumns,
@@ -265,7 +265,7 @@ class ResponsiveListView extends StatelessWidget {
     this.childAspectRatio,
     this.physics,
     this.shrinkWrap = false,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -297,12 +297,12 @@ class ResponsiveCard extends StatelessWidget {
   final EdgeInsets? margin;
   
   const ResponsiveCard({
-    Key? key,
+    super.key,
     required this.child,
     this.maxWidth,
     this.padding,
     this.margin,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
