@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../application/providers/recipe_providers.dart';
+import '../../core/ui/responsive_utils.dart';
 import '../widgets/recipe_card.dart';
 
 class FavoritesScreen extends ConsumerWidget {
@@ -35,33 +36,39 @@ class FavoritesScreen extends ConsumerWidget {
 
   Widget _buildContent(BuildContext context, WidgetRef ref, List favorites) {
     if (favorites.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
+      return ResponsiveContainer(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.favorite_border,
-                size: 80,
+                size: ResponsiveUtils.getResponsiveValue(
+                  context,
+                  mobile: 80.0,
+                  tablet: 100.0,
+                  desktop: 120.0,
+                ),
                 color: Colors.grey[400],
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
               Text(
                 '暂无收藏菜谱',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: Colors.grey[600],
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context, 24),
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context) * 0.5),
               Text(
                 '在菜谱详情页点击❤️即可收藏喜欢的菜谱',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context) * 1.5),
               ElevatedButton.icon(
                 onPressed: () => context.go('/home'),
                 icon: const Icon(Icons.home),
@@ -73,64 +80,92 @@ class FavoritesScreen extends ConsumerWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: favorites.length,
-      itemBuilder: (context, index) {
-        final recipe = favorites[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
-          child: Dismissible(
-            key: Key(recipe.id),
-            direction: DismissDirection.endToStart,
-            background: Container(
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(12),
+    return ResponsiveContainer(
+      child: ResponsiveBuilder(
+        builder: (context, deviceType) {
+          // 创建卡片列表
+          final cards = favorites.map<Widget>((recipe) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: ResponsiveUtils.getResponsiveSpacing(context),
               ),
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.delete,
-                    color: Colors.white,
-                    size: 32,
+              child: Dismissible(
+                key: Key(recipe.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: EdgeInsets.only(
+                    right: ResponsiveUtils.getResponsiveSpacing(context),
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    '删除',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ],
-              ),
-            ),
-            confirmDismiss: (direction) => _showDeleteDialog(context, recipe.name),
-            onDismissed: (direction) {
-              ref.read(favoritesProvider.notifier).toggleFavorite(recipe);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('已取消收藏 ${recipe.name}'),
-                  action: SnackBarAction(
-                    label: '撤销',
-                    onPressed: () {
-                      ref.read(favoritesProvider.notifier).toggleFavorite(recipe);
-                    },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                        size: ResponsiveUtils.getResponsiveValue(
+                          context,
+                          mobile: 32.0,
+                          tablet: 36.0,
+                          desktop: 40.0,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '删除',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(context, 12),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-            child: RecipeCard(
-              recipe: recipe,
-              onTap: () => context.push('/recipe/${recipe.id}'),
-            ),
-          ),
-        );
-      },
+                confirmDismiss: (direction) => _showDeleteDialog(context, recipe.name),
+                onDismissed: (direction) {
+                  ref.read(favoritesProvider.notifier).toggleFavorite(recipe);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('已取消收藏 ${recipe.name}'),
+                      action: SnackBarAction(
+                        label: '撤销',
+                        onPressed: () {
+                          ref.read(favoritesProvider.notifier).toggleFavorite(recipe);
+                        },
+                      ),
+                    ),
+                  );
+                },
+                child: RecipeCard(
+                  recipe: recipe,
+                  onTap: () => context.push('/recipe/${recipe.id}'),
+                ),
+              ),
+            );
+          }).toList();
+
+          // 根据设备类型选择布局
+          if (deviceType == DeviceType.mobile) {
+            // 移动设备使用列表布局
+            return ListView(
+              children: cards,
+            );
+          } else {
+            // 平板和桌面使用网格布局
+            return ResponsiveGridView(
+              mobileColumns: 1,
+              tabletColumns: 2,
+              desktopColumns: 3,
+              childAspectRatio: 1.2,
+              children: cards,
+            );
+          }
+        },
+      ),
     );
   }
 

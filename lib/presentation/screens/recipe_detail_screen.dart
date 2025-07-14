@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/providers/recipe_providers.dart';
 import '../../domain/entities/recipe.dart';
 import '../../domain/entities/nutrition_analysis.dart';
+import '../../core/ui/responsive_utils.dart';
 
 class RecipeDetailScreen extends ConsumerWidget {
   final String recipeId;
@@ -121,22 +122,60 @@ class RecipeDetailScreen extends ConsumerWidget {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeaderCard(context, recipe),
-            const SizedBox(height: 16),
-            _buildNutritionCard(context, recipe),
-            const SizedBox(height: 16),
-            if (recipe.culturalStory != null) ...[
-              _buildCulturalStoryCard(context, recipe),
-              const SizedBox(height: 16),
+        child: ResponsiveContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeaderCard(context, recipe),
+              SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+              ResponsiveBuilder(
+                builder: (context, deviceType) {
+                  // 在大屏幕上使用两列布局
+                  if (deviceType == DeviceType.desktop) {
+                    return Column(
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: _buildNutritionCard(context, recipe),
+                            ),
+                            SizedBox(width: ResponsiveUtils.getResponsiveSpacing(context)),
+                            Expanded(
+                              flex: 1,
+                              child: _buildIngredientsCard(context, recipe),
+                            ),
+                          ],
+                        ),
+                        if (recipe.culturalStory != null) ...[
+                          SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+                          _buildCulturalStoryCard(context, recipe),
+                        ],
+                        SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+                        _buildInstructionsCard(context, recipe),
+                      ],
+                    );
+                  } else {
+                    // 在移动设备和平板上使用单列布局
+                    return Column(
+                      children: [
+                        _buildNutritionCard(context, recipe),
+                        SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+                        if (recipe.culturalStory != null) ...[
+                          _buildCulturalStoryCard(context, recipe),
+                          SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+                        ],
+                        _buildIngredientsCard(context, recipe),
+                        SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+                        _buildInstructionsCard(context, recipe),
+                      ],
+                    );
+                  }
+                },
+              ),
             ],
-            _buildIngredientsCard(context, recipe),
-            const SizedBox(height: 16),
-            _buildInstructionsCard(context, recipe),
-          ],
+          ),
         ),
       ),
     );
@@ -145,7 +184,7 @@ class RecipeDetailScreen extends ConsumerWidget {
   Widget _buildHeaderCard(BuildContext context, Recipe recipe) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: ResponsiveUtils.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -155,15 +194,17 @@ class RecipeDetailScreen extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context) * 0.5),
             Text(
               recipe.description,
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context, 16),
+              ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
             Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
+              spacing: ResponsiveUtils.getResponsiveSpacing(context) * 0.5,
+              runSpacing: ResponsiveUtils.getResponsiveSpacing(context) * 0.5,
               children: [
                 _buildInfoChip(context, Icons.access_time, '准备: ${recipe.prepTime}分钟'),
                 _buildInfoChip(context, Icons.kitchen, '烹饪: ${recipe.cookTime}分钟'),
@@ -178,10 +219,10 @@ class RecipeDetailScreen extends ConsumerWidget {
               ],
             ),
             if (recipe.tags.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context) * 0.75),
               Wrap(
-                spacing: 4.0,
-                runSpacing: 4.0,
+                spacing: ResponsiveUtils.getResponsiveSpacing(context) * 0.25,
+                runSpacing: ResponsiveUtils.getResponsiveSpacing(context) * 0.25,
                 children: recipe.tags.map((tag) => Chip(
                   label: Text(
                     tag,
@@ -201,7 +242,7 @@ class RecipeDetailScreen extends ConsumerWidget {
     final nutrition = recipe.nutrition;
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: ResponsiveUtils.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -218,7 +259,7 @@ class RecipeDetailScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
             if (nutrition.summary.isNotEmpty) ...[
               Container(
                 padding: const EdgeInsets.all(12),
@@ -275,13 +316,13 @@ class RecipeDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
             ],
-            GridView.count(
+            ResponsiveGridView(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              childAspectRatio: 3,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
+              mobileColumns: 2,
+              tabletColumns: 3,
+              desktopColumns: 4,
+              childAspectRatio: 2.5,
               children: [
                 _buildNutritionItem('卡路里', '${nutrition.calories.toInt()}', 'kcal'),
                 _buildNutritionItem('蛋白质', '${nutrition.protein.toInt()}', 'g'),
@@ -301,7 +342,7 @@ class RecipeDetailScreen extends ConsumerWidget {
     final story = recipe.culturalStory!;
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: ResponsiveUtils.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -397,7 +438,7 @@ class RecipeDetailScreen extends ConsumerWidget {
   Widget _buildIngredientsCard(BuildContext context, Recipe recipe) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: ResponsiveUtils.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -414,9 +455,9 @@ class RecipeDetailScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
             ...recipe.ingredients.map((ingredient) => Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
+              padding: EdgeInsets.only(bottom: ResponsiveUtils.getResponsiveSpacing(context) * 0.5),
               child: Row(
                 children: [
                   Container(
@@ -455,7 +496,7 @@ class RecipeDetailScreen extends ConsumerWidget {
   Widget _buildInstructionsCard(BuildContext context, Recipe recipe) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: ResponsiveUtils.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -472,12 +513,12 @@ class RecipeDetailScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
             ...recipe.instructions.asMap().entries.map((entry) {
               final index = entry.key;
               final instruction = entry.value;
               return Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
+                padding: EdgeInsets.only(bottom: ResponsiveUtils.getResponsiveSpacing(context)),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -517,8 +558,25 @@ class RecipeDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildInfoChip(BuildContext context, IconData icon, String label, {Color? color}) {
+    final chipPadding = ResponsiveUtils.getResponsiveValue(
+      context,
+      mobile: 8.0,
+      tablet: 10.0,
+      desktop: 12.0,
+    );
+    final iconSize = ResponsiveUtils.getResponsiveValue(
+      context,
+      mobile: 14.0,
+      tablet: 16.0,
+      desktop: 18.0,
+    );
+    final fontSize = ResponsiveUtils.getResponsiveFontSize(context, 12);
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: chipPadding,
+        vertical: chipPadding * 0.5,
+      ),
       decoration: BoxDecoration(
         color: (color ?? Theme.of(context).colorScheme.primary).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
@@ -528,14 +586,14 @@ class RecipeDetailScreen extends ConsumerWidget {
         children: [
           Icon(
             icon,
-            size: 14,
+            size: iconSize,
             color: color ?? Theme.of(context).colorScheme.primary,
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: chipPadding * 0.5),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: fontSize,
               color: color ?? Theme.of(context).colorScheme.primary,
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recipe_generator/presentation/screens/network_diagnostics_screen.dart';
 import '../../application/providers/recipe_providers.dart';
+import '../../core/ui/responsive_utils.dart';
 import 'api_config_screen.dart';
 
 /// 设置页面
@@ -42,13 +43,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: const Text('设置'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+      body: ResponsiveContainer(
+        maxWidth: ResponsiveUtils.getFormMaxWidth(context),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             // API配置导航卡片
-            Card(
+            ResponsiveCard(
               child: ListTile(
                 leading: Icon(
                   Icons.api,
@@ -109,9 +111,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
             // 文化故事设置卡片
-            Card(
+            ResponsiveCard(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -130,7 +132,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
                     SwitchListTile(
                       title: const Text('强制生成文化故事'),
                       subtitle: const Text('开启后，每个菜谱都会包含相关的文化背景故事'),
@@ -181,8 +183,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Card(
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+            ResponsiveCard(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -218,8 +220,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Card(
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+            ResponsiveCard(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -259,8 +261,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Card(
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+            ResponsiveCard(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -287,8 +289,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Card(
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+            ResponsiveCard(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
