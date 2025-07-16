@@ -1,0 +1,88 @@
+# .github/workflows/build_flutter_app.yml
+
+name: Build Flutter App without Analyze and Test
+
+# 触发工作流程的事件：推送到 main 分支或向 main 分支发起 Pull Request 时
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    # 使用策略矩阵，为不同平台并行执行此作业
+    strategy:
+      matrix:
+        # 定义平台：Ubuntu 用于构建 Android 和 Web，Windows 用于构建 Windows 应用
+        os: [ubuntu-latest, windows-latest]
+    
+    # 根据矩阵中的 os 变量选择运行器
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # 步骤 1: 检出您的仓库代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 步骤 2: 设置 Flutter 环境
+      # 使用 subosito/flutter-action，并指定版本和开启缓存
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.2' # 指定您需要的 Flutter 版本
+          channel: 'stable'       # 使用稳定版通道
+          cache: true             # 开启缓存以加速后续构建
+
+      # 步骤 3: 获取 Flutter 依赖包
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      # 步骤 4: 运行代码分析和测试 (可选，但强烈推荐)
+      # - name: Run analysis and tests
+      - name: Run analysis 
+        run: |
+          flutter analyze --no-fatal-warnings --no-fatal-infos
+      # flutter test
+
+      # 步骤 5: 构建 Android APK (仅在 Linux 运行器上执行)
+      - name: Build Android APK
+        if: runner.os == 'Linux'
+        run: flutter build apk --release
+
+      # 步骤 6: 构建 Web 应用 (仅在 Linux 运行器上执行)
+      - name: Build Web
+        if: runner.os == 'Linux'
+        run: flutter build web --release
+
+      # 步骤 7: 构建 Windows 应用 (仅在 Windows 运行器上执行)
+      - name: Build Windows
+        if: runner.os == 'Windows'
+        run: flutter build windows --release
+
+      # --- 上传构建产物 ---
+      # 将构建好的文件保存为 "Artifacts"，方便下载
+
+      # 步骤 8: 上传 APK 文件
+      - name: Upload APK artifact
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk # Artifacts 的名称
+          path: build/app/outputs/apk/release/app-release.apk # APK 文件路径
+
+      # 步骤 9: 上传 Web 构建文件
+      - name: Upload Web artifact
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web # Web 构建输出的整个目录
+
+      # 步骤 10: 上传 Windows 构建文件
+      - name: Upload Windows artifact
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: build/windows/x64/runner/Release/ # Windows 构建输出的目录
