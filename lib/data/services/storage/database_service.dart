@@ -1,127 +1,126 @@
-import 'package:hive/hive.dart';
+import 'package:flutter/foundation.dart';
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:recipe_generator/data/models/recipe_model.dart';
 import 'package:recipe_generator/data/models/recipe_history_model.dart';
 
 class DatabaseService {
-  static Box<RecipeModel>? _recipeBox;
-  static Box<RecipeHistoryModel>? _historyBox;
+  static Isar? _isar;
 
-  static Future<Box<RecipeModel>> get instance async{
-    if(_recipeBox != null) {
-      return _recipeBox!;
+  static Future<Isar> get instance async {
+    if (_isar != null) {
+      return _isar!;
     }
-    Hive.registerAdapter(RecipeModelAdapter());
-    _recipeBox = await Hive.openBox<RecipeModel>('recipes');
-    return _recipeBox!;
-  }
 
-  static Future<Box<RecipeHistoryModel>> get historyInstance async{
-    if(_historyBox != null) {
-      return _historyBox!;
+    if (kIsWeb) {
+      // Web平台使用默认配置
+      _isar = await Isar.open(
+        [RecipeModelSchema, RecipeHistoryModelSchema],
+        directory: '', // Web平台使用空字符串
+      );
+    } else {
+      // 移动平台需要指定目录
+      final dir = await getApplicationDocumentsDirectory();
+      _isar = await Isar.open(
+        [RecipeModelSchema, RecipeHistoryModelSchema],
+        directory: dir.path,
+      );
     }
-    Hive.registerAdapter(RecipeHistoryModelAdapter());
-    _historyBox = await Hive.openBox<RecipeHistoryModel>('recipe_history');
-    return _historyBox!;
+    return _isar!;
   }
 
   Future<void> saveRecipe(RecipeModel recipe) async {
-    final box = await instance;
-    await box.add(recipe);
+    final isar = await instance;
+    await isar.writeTxn(() async {
+      await isar.recipeModels.put(recipe);
+    });
   }
 
   Future<List<RecipeModel>> getFavoriteRecipes() async {
-    final box = await instance;
-    final favourites = box.values.where((recipe) => recipe.isFavorite).toList();
-    return favourites;
+    final isar = await instance;
+    return await isar.recipeModels.filter().isFavoriteEqualTo(true).findAll();
   }
 
   Future<List<RecipeModel>> getAllRecipes() async {
-    final box = await instance;
-    return box.values.toList();
+    final isar = await instance;
+    return await isar.recipeModels.where().findAll();
   }
 
   Future<void> toggleFavorite(String recipeId) async {
-    final box = await instance;
-    try {
-      final recipe = box.values.firstWhere((recipe) => recipe.recipeId == recipeId);
-      recipe.isFavorite = !recipe.isFavorite;
-      await recipe.save();
-    } catch (e) {
-      throw Exception('菜谱未找到，无法切换收藏状态: $recipeId');
-    }
+    final isar = await instance;
+    await isar.writeTxn(() async {
+      final recipe = await isar.recipeModels.filter().recipeIdEqualTo(recipeId).findFirst();
+      if (recipe != null) {
+        recipe.isFavorite = !recipe.isFavorite;
+        await isar.recipeModels.put(recipe);
+      } else {
+        throw Exception('菜谱未找到，无法切换收藏状态: $recipeId');
+      }
+    });
   }
 
   Future<void> deleteRecipe(String recipeId) async {
-    final box = await instance;
-    try {
-      final recipe = box.values.firstWhere((recipe) => recipe.recipeId == recipeId);
-      await recipe.delete();
-    } catch (e) {
-      throw Exception('菜谱未找到，无法删除: $recipeId');
-    }
+    final isar = await instance;
+    await isar.writeTxn(() async {
+      final recipe = await isar.recipeModels.filter().recipeIdEqualTo(recipeId).findFirst();
+      if (recipe != null) {
+        await isar.recipeModels.delete(recipe.id);
+      } else {
+        throw Exception('菜谱未找到，无法删除: $recipeId');
+      }
+    });
   }
 
   Future<void> clearAllFavorites() async {
-    final box = await instance;
-    final recipes = box.values.toList();
-    for (final recipe in recipes) {
-      if (recipe.isFavorite) {
+    final isar = await instance;
+    await isar.writeTxn(() async {
+      final favoriteRecipes = await isar.recipeModels.filter().isFavoriteEqualTo(true).findAll();
+      for (final recipe in favoriteRecipes) {
         recipe.isFavorite = false;
-        await recipe.save();
+        await isar.recipeModels.put(recipe);
       }
-    }
+    });
   }
 
   Future<bool> isRecipeFavorite(String recipeId) async {
-    final box = await instance;
-    try {
-      final recipe = box.values.firstWhere(
-        (recipe) => recipe.recipeId == recipeId,
-      );
-      return recipe.isFavorite;
-    } catch (e) {
-      // 如果找不到菜谱，返回false（未收藏）
-      return false;
-    }
+    final isar = await instance;
+    final recipe = await isar.recipeModels.filter().recipeIdEqualTo(recipeId).findFirst();
+    return recipe?.isFavorite ?? false;
   }
 
   Future<RecipeModel?> getRecipeById(String recipeId) async {
-    final box = await instance;
-    try {
-      final recipe = box.values.firstWhere(
-        (recipe) => recipe.recipeId == recipeId,
-      );
-      return recipe;
-    } catch (e) {
-      // 如果找不到菜谱，返回null
-      return null;
-    }
+    final isar = await instance;
+    return await isar.recipeModels.filter().recipeIdEqualTo(recipeId).findFirst();
   }
 
   Future<void> saveRecipeHistory(RecipeHistoryModel history) async {
-    final box = await historyInstance;
-    await box.add(history);
+    final isar = await instance;
+    await isar.writeTxn(() async {
+      await isar.recipeHistoryModels.put(history);
+    });
   }
 
   Future<List<RecipeHistoryModel>> getRecipeHistory() async {
-    final box = await historyInstance;
-    final historyList = box.values.toList();
-    historyList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return historyList;
+    final isar = await instance;
+    return await isar.recipeHistoryModels.where().sortByCreatedAtDesc().findAll();
   }
 
   Future<void> deleteRecipeHistory(String historyId) async {
-    final box = await historyInstance;
-    try {
-      final history = box.values.firstWhere((history) => history.id == historyId);
-      await history.delete();
-    } catch (e) {
-      throw Exception('历史记录未找到，无法删除: $historyId');
-    }
+    final isar = await instance;
+    await isar.writeTxn(() async {
+      final history = await isar.recipeHistoryModels.filter().idEqualTo(historyId).findFirst();
+      if (history != null) {
+        await isar.recipeHistoryModels.delete(history.isarId);
+      } else {
+        throw Exception('历史记录未找到，无法删除: $historyId');
+      }
+    });
   }
 
   Future<void> clearAllHistory() async {
-    final box = await historyInstance;
-    await box.clear();
+    final isar = await instance;
+    await isar.writeTxn(() async {
+      await isar.recipeHistoryModels.clear();
+    });
   }
 }

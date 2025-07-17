@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:isar/isar.dart';
 import 'package:recipe_generator/domain/entities/cultural_story.dart';
 import 'package:recipe_generator/domain/entities/ingredient.dart';
 import 'package:recipe_generator/domain/entities/nutrition_analysis.dart';
@@ -8,74 +8,64 @@ import 'package:recipe_generator/domain/entities/recipe.dart';
 
 part 'recipe_model.g.dart';
 
-@HiveType(typeId: 0)
-class RecipeModel extends HiveObject{
-  // 数据库ID
-  @HiveField(0)
-  int? id;
+@collection
+class RecipeModel {
+  // 数据库ID (Isar自动生成)
+  Id id = Isar.autoIncrement;
 
-  // 食谱ID(JSON中的唯一标识符)
-  @HiveField(1)
+  // 食谱ID(JSON中的唯一标识符) - 添加唯一索引
+  @Index(unique: true)
   late String recipeId;
 
-  // 名称
-  @HiveField(2)
+  // 名称 - 添加索引以支持搜索
+  @Index()
   late String name;
 
   // 描述
-  @HiveField(3)
   late String description;
 
   // 食材(JSON格式)
-  @HiveField(4)
   late String ingredientsJson;
 
   // 烹饪步骤(JSON格式)
-  @HiveField(5)
   late String instructionsJson;
 
   // 准备时间
-  @HiveField(6)
   late int prepTime;
 
   // 烹饪时间
-  @HiveField(7)
   late int cookTime;
 
   // 几人份
-  @HiveField(8)
   late int servings;
 
-  // 烹饪难度
-  @HiveField(9)
+  // 烹饪难度 - 添加索引以支持过滤
+  @Index()
   late String difficulty;
 
-  // 菜系
-  @HiveField(10)
+  // 菜系 - 添加索引以支持过滤
+  @Index()
   late String cuisine;
 
   // 标签(JSON格式)
-  @HiveField(11)
   late String tagsJson;
 
   // 营养信息(JSON格式)
-  @HiveField(12)
   late String nutritionJson;
 
-  // 创建时间
-  @HiveField(13)
+  // 创建时间 - 添加索引以支持排序
+  @Index()
   late DateTime createdAt;
 
-  // 收藏状态
-  @HiveField(14)
+  // 收藏状态 - 添加索引以支持快速查询收藏
+  @Index()
   late bool isFavorite;
 
   // 文化故事(JSON格式)
-  @HiveField(15)
   String? culturalStoryJson;
 
   RecipeModel();
-  
+
   RecipeModel.fromDomain(Recipe recipe) {
     recipeId = recipe.id;
     name = recipe.name;

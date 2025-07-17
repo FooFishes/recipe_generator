@@ -89,11 +89,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<void> clearAllFavorites() async{
     try {
-      final favorites = await _databaseService.getFavoriteRecipes();
-      for (final recipe in favorites) {
-        recipe.isFavorite = false;
-        await recipe.save();
-      }
+      await _databaseService.clearAllFavorites();
     } catch (e) {
       throw Exception('清除收藏菜谱失败: ${e.toString()}');
     }
@@ -143,11 +139,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
   Future<void> removeFavoriteRecipe(String recipeId) async {
     AppLogger.logUserAction('取消收藏菜谱', {'recipeId': recipeId});
     try {
-      final existingRecipe = await _databaseService.getRecipeById(recipeId);
-      if (existingRecipe != null && existingRecipe.isFavorite) {
-        existingRecipe.isFavorite = false;
-        await existingRecipe.save();
-      }
+      await _databaseService.toggleFavorite(recipeId);
       AppLogger.info('成功取消收藏菜谱: $recipeId');
     } catch (e, stackTrace) {
       AppLogger.error('取消收藏菜谱失败', e, stackTrace);
@@ -164,8 +156,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
       if (existingRecipe != null) {
         // 如果已存在且未收藏，则设为收藏
         if (!existingRecipe.isFavorite) {
-          existingRecipe.isFavorite = true;
-          await existingRecipe.save();
+          await _databaseService.toggleFavorite(recipe.id);
         }
       } else {
         // 如果不存在，保存新的菜谱并设为收藏

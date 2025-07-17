@@ -39,12 +39,8 @@ mixin _$Recipe {
   DateTime get createdAt => throw _privateConstructorUsedError; // 是否收藏
   bool get isFavorite => throw _privateConstructorUsedError;
 
-  /// Serializes this Recipe to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of Recipe
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $RecipeCopyWith<Recipe> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -84,8 +80,6 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Recipe
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -169,8 +163,6 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
     ) as $Val);
   }
 
-  /// Create a copy of Recipe
-  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $NutritionAnalysisCopyWith<$Res> get nutrition {
@@ -179,8 +171,6 @@ class _$RecipeCopyWithImpl<$Res, $Val extends Recipe>
     });
   }
 
-  /// Create a copy of Recipe
-  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $CulturalStoryCopyWith<$Res>? get culturalStory {
@@ -232,8 +222,6 @@ class __$$RecipeImplCopyWithImpl<$Res>
       _$RecipeImpl _value, $Res Function(_$RecipeImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Recipe
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -450,7 +438,7 @@ class _$RecipeImpl implements _Recipe {
                 other.isFavorite == isFavorite));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -470,9 +458,7 @@ class _$RecipeImpl implements _Recipe {
       createdAt,
       isFavorite);
 
-  /// Create a copy of Recipe
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$RecipeImplCopyWith<_$RecipeImpl> get copyWith =>
@@ -506,42 +492,38 @@ abstract class _Recipe implements Recipe {
 
   factory _Recipe.fromJson(Map<String, dynamic> json) = _$RecipeImpl.fromJson;
 
-// 食谱ID(JSON中的唯一标识符)
-  @override
-  String get id; // 名称
-  @override
-  String get name; // 描述
-  @override
-  String get description; // 食材列表
-  @override
-  List<Ingredient> get ingredients; // 烹饪步骤
-  @override
-  List<String> get instructions; // 准备时间
-  @override
-  int get prepTime; // 烹饪时间
-  @override
-  int get cookTime; // 几人份
-  @override
-  int get servings; // 烹饪难度
-  @override
-  String get difficulty; // 菜系
-  @override
-  String get cuisine; // 标签
-  @override
-  List<String> get tags; // 营养信息
-  @override
-  NutritionAnalysis get nutrition; // 文化故事
-  @override
-  CulturalStory? get culturalStory; // 创建时间
-  @override
-  DateTime get createdAt; // 是否收藏
-  @override
+  @override // 食谱ID(JSON中的唯一标识符)
+  String get id;
+  @override // 名称
+  String get name;
+  @override // 描述
+  String get description;
+  @override // 食材列表
+  List<Ingredient> get ingredients;
+  @override // 烹饪步骤
+  List<String> get instructions;
+  @override // 准备时间
+  int get prepTime;
+  @override // 烹饪时间
+  int get cookTime;
+  @override // 几人份
+  int get servings;
+  @override // 烹饪难度
+  String get difficulty;
+  @override // 菜系
+  String get cuisine;
+  @override // 标签
+  List<String> get tags;
+  @override // 营养信息
+  NutritionAnalysis get nutrition;
+  @override // 文化故事
+  CulturalStory? get culturalStory;
+  @override // 创建时间
+  DateTime get createdAt;
+  @override // 是否收藏
   bool get isFavorite;
-
-  /// Create a copy of Recipe
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$RecipeImplCopyWith<_$RecipeImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

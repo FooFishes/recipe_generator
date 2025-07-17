@@ -24,12 +24,8 @@ mixin _$CulturalStory {
   String get title => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
 
-  /// Serializes this CulturalStory to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of CulturalStory
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $CulturalStoryCopyWith<CulturalStory> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -53,8 +49,6 @@ class _$CulturalStoryCopyWithImpl<$Res, $Val extends CulturalStory>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of CulturalStory
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -98,8 +92,6 @@ class __$$CulturalStoryImplCopyWithImpl<$Res>
       _$CulturalStoryImpl _value, $Res Function(_$CulturalStoryImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of CulturalStory
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -158,14 +150,12 @@ class _$CulturalStoryImpl implements _CulturalStory {
             (identical(other.content, content) || other.content == content));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode =>
       Object.hash(runtimeType, triggerIngredient, title, content);
 
-  /// Create a copy of CulturalStory
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$CulturalStoryImplCopyWith<_$CulturalStoryImpl> get copyWith =>
@@ -194,11 +184,8 @@ abstract class _CulturalStory implements CulturalStory {
   String get title;
   @override
   String get content;
-
-  /// Create a copy of CulturalStory
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$CulturalStoryImplCopyWith<_$CulturalStoryImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

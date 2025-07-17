@@ -26,12 +26,8 @@ mixin _$Ingredient {
   String get unit => throw _privateConstructorUsedError; // 是否可选
   bool get isOptional => throw _privateConstructorUsedError;
 
-  /// Serializes this Ingredient to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of Ingredient
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $IngredientCopyWith<Ingredient> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -55,8 +51,6 @@ class _$IngredientCopyWithImpl<$Res, $Val extends Ingredient>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Ingredient
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -105,8 +99,6 @@ class __$$IngredientImplCopyWithImpl<$Res>
       _$IngredientImpl _value, $Res Function(_$IngredientImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Ingredient
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -175,13 +167,11 @@ class _$IngredientImpl extends _Ingredient {
                 other.isOptional == isOptional));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, name, amount, unit, isOptional);
 
-  /// Create a copy of Ingredient
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$IngredientImplCopyWith<_$IngredientImpl> get copyWith =>
@@ -206,20 +196,16 @@ abstract class _Ingredient extends Ingredient {
   factory _Ingredient.fromJson(Map<String, dynamic> json) =
       _$IngredientImpl.fromJson;
 
-// 名称
-  @override
-  String get name; // 数量
-  @override
-  double get amount; // 单位
-  @override
-  String get unit; // 是否可选
-  @override
+  @override // 名称
+  String get name;
+  @override // 数量
+  double get amount;
+  @override // 单位
+  String get unit;
+  @override // 是否可选
   bool get isOptional;
-
-  /// Create a copy of Ingredient
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$IngredientImplCopyWith<_$IngredientImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

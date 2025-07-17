@@ -28,9 +28,7 @@ mixin _$LogConfig {
   bool? get showStackTrace => throw _privateConstructorUsedError;
   String? get fileNamePrefix => throw _privateConstructorUsedError;
 
-  /// Create a copy of LogConfig
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $LogConfigCopyWith<LogConfig> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -64,8 +62,6 @@ class _$LogConfigCopyWithImpl<$Res, $Val extends LogConfig>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of LogConfig
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -160,8 +156,6 @@ class __$$LogConfigImplCopyWithImpl<$Res>
       _$LogConfigImpl _value, $Res Function(_$LogConfigImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of LogConfig
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -324,9 +318,7 @@ class _$LogConfigImpl implements _LogConfig {
       showStackTrace,
       fileNamePrefix);
 
-  /// Create a copy of LogConfig
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$LogConfigImplCopyWith<_$LogConfigImpl> get copyWith =>
@@ -369,11 +361,8 @@ abstract class _LogConfig implements LogConfig {
   bool? get showStackTrace;
   @override
   String? get fileNamePrefix;
-
-  /// Create a copy of LogConfig
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$LogConfigImplCopyWith<_$LogConfigImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

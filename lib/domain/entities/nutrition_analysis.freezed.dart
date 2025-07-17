@@ -31,12 +31,8 @@ mixin _$NutritionAnalysis {
   String get summary => throw _privateConstructorUsedError; // 指南
   String get guidance => throw _privateConstructorUsedError;
 
-  /// Serializes this NutritionAnalysis to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of NutritionAnalysis
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $NutritionAnalysisCopyWith<NutritionAnalysis> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -69,8 +65,6 @@ class _$NutritionAnalysisCopyWithImpl<$Res, $Val extends NutritionAnalysis>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of NutritionAnalysis
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -153,8 +147,6 @@ class __$$NutritionAnalysisImplCopyWithImpl<$Res>
       $Res Function(_$NutritionAnalysisImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of NutritionAnalysis
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -277,14 +269,12 @@ class _$NutritionAnalysisImpl implements _NutritionAnalysis {
                 other.guidance == guidance));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, calories, protein, carbs, fat,
       fiber, sugar, sodium, summary, guidance);
 
-  /// Create a copy of NutritionAnalysis
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$NutritionAnalysisImplCopyWith<_$NutritionAnalysisImpl> get copyWith =>
@@ -314,30 +304,26 @@ abstract class _NutritionAnalysis implements NutritionAnalysis {
   factory _NutritionAnalysis.fromJson(Map<String, dynamic> json) =
       _$NutritionAnalysisImpl.fromJson;
 
-// 热量
-  @override
-  double get calories; // 蛋白质
-  @override
-  double get protein; // 碳水化合物
-  @override
-  double get carbs; // 脂肪
-  @override
-  double get fat; // 纤维
-  @override
-  double get fiber; // 糖
-  @override
-  double get sugar; // 钠
-  @override
-  double get sodium; // 总结
-  @override
-  String get summary; // 指南
-  @override
+  @override // 热量
+  double get calories;
+  @override // 蛋白质
+  double get protein;
+  @override // 碳水化合物
+  double get carbs;
+  @override // 脂肪
+  double get fat;
+  @override // 纤维
+  double get fiber;
+  @override // 糖
+  double get sugar;
+  @override // 钠
+  double get sodium;
+  @override // 总结
+  String get summary;
+  @override // 指南
   String get guidance;
-
-  /// Create a copy of NutritionAnalysis
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$NutritionAnalysisImplCopyWith<_$NutritionAnalysisImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
