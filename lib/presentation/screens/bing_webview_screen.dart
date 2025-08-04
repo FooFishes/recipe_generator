@@ -23,10 +23,12 @@ class _BingWebViewScreenState extends State<BingWebViewScreen> {
   void _initializeWebView() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
             // 更新加载进度
+            AppLogger.debug('WebView加载进度: $progress%');
           },
           onPageStarted: (String url) {
             setState(() {
@@ -42,6 +44,16 @@ class _BingWebViewScreenState extends State<BingWebViewScreen> {
           },
           onWebResourceError: (WebResourceError error) {
             AppLogger.error('WebView加载错误: ${error.description}');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('网页加载失败: ${error.description}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            AppLogger.debug('WebView导航请求: ${request.url}');
+            return NavigationDecision.navigate;
           },
         ),
       )
