@@ -67,6 +67,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.web),
+            onPressed: () => context.push('/webview'),
+            tooltip: '必应搜索',
+          ),
+          IconButton(
             icon: const Icon(Icons.favorite),
             onPressed: () => context.push('/favorites'),
             tooltip: '我的收藏',

@@ -271,6 +271,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     Row(
                       children: [
                         Icon(
+                          Icons.web,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '网页浏览',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Text('打开必应搜索页面，方便查找菜谱灵感和烹饪技巧'),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          context.push('/webview');
+                        },
+                        icon: const Icon(Icons.open_in_browser),
+                        label: const Text('打开必应搜索'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: ResponsiveUtils.getResponsiveSpacing(context)),
+            ResponsiveCard(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
                           Icons.security,
                           color: Theme.of(context).colorScheme.tertiary,
                         ),

@@ -33,6 +33,10 @@
         <!-- OpenAI相关域名 -->
         <domain includeSubdomains="true">openai.com</domain>
         <domain includeSubdomains="true">api.openai.com</domain>
+        <!-- 微软必应相关域名 -->
+        <domain includeSubdomains="true">bing.com</domain>
+        <domain includeSubdomains="true">microsoft.com</domain>
+        <domain includeSubdomains="true">microsoftonline.com</domain>
         <!-- 其他常见AI服务域名 -->
         <domain includeSubdomains="true">anthropic.com</domain>
         <domain includeSubdomains="true">googleapis.com</domain>

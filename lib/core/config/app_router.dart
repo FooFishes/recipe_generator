@@ -8,6 +8,7 @@ import '../../presentation/screens/history_screen.dart';
 import '../../presentation/screens/history_detail_screen.dart';
 import '../../presentation/screens/settings_screen.dart';
 import '../../presentation/screens/log_export_screen.dart';
+import '../../presentation/screens/bing_webview_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/home',
@@ -104,6 +105,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/logs',
       builder: (context, state) => const LogExportScreen(),
+    ),
+    GoRoute(
+      path: '/webview',
+      builder: (context, state) => const BingWebViewScreen(),
     ),
   ],
 );
