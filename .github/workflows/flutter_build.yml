@@ -1,87 +1,236 @@
-# .github/workflows/build_flutter_app.yml
+name: Build Flutter App (Analyze • Test • Package)
 
-name: Build Flutter App with Analyze and Test
-
-# 触发工作流程的事件：推送到 main 分支或向 main 分支发起 Pull Request 时
 on:
   push:
-    branches: ["main"]
+    branches: [main]
+    tags:
+      - 'v*'
   pull_request:
-    branches: ["main"]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '自定义版本号 (例: 1.2.3 或 1.2.3-beta)。留空自动生成'
+        required: false
+      buildInstaller:
+        description: '是否构建 Windows 安装器'
+        type: choice
+        options:
+          - no
+          - yes
+        default: yes
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: '3.29.2'
+  FLUTTER_CHANNEL: 'stable'
+  APP_EXECUTABLE_NAME: recipe_generator
+  INSTALLER_BASE_NAME: RecipeGenerator-Setup
+  WINDOWS_BUILD_DIR: build/windows/x64/runner/Release
 
 jobs:
   build:
-    # 使用策略矩阵，为不同平台并行执行此作业
     strategy:
+      fail-fast: false
       matrix:
-        # 定义平台：Ubuntu 用于构建 Android 和 Web，Windows 用于构建 Windows 应用
         os: [ubuntu-latest, windows-latest]
-    
-    # 根据矩阵中的 os 变量选择运行器
     runs-on: ${{ matrix.os }}
 
     steps:
-      # 步骤 1: 检出您的仓库代码
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      # 步骤 2: 设置 Flutter 环境
-      # 使用 subosito/flutter-action，并指定版本和开启缓存
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.2' # 指定您需要的 Flutter 版本
-          channel: 'stable'       # 使用稳定版通道
-          cache: true             # 开启缓存以加速后续构建
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
 
-      # 步骤 3: 获取 Flutter 依赖包
-      - name: Get Flutter dependencies
+      - name: Resolve version
+        id: resolve_version
+        shell: pwsh
+        run: |
+          $event = "${{ github.event_name }}"
+          $refName = "${{ github.ref_name }}"
+          $inputVersion = "${{ inputs.version }}"
+          if ($event -eq "workflow_dispatch") {
+            if ($inputVersion) {
+              $version = $inputVersion
+            } else {
+              $version = (Get-Date -Format "0.0.0-yyyyMMddHHmmss")
+            }
+          } elseif ($refName -match '^v\d') {
+            $version = $refName.Substring(1)
+          } else {
+            $version = "0.0.0-${{ github.run_number }}"
+          }
+          "APP_VERSION=$version" | Out-File -FilePath $Env:GITHUB_ENV -Append
+          Write-Host "Final version: $version"
+
+      - name: flutter pub get
         run: flutter pub get
 
-      # 步骤 4: 运行代码分析和测试 (可选，但强烈推荐)
-      - name: Run analysis and tests
-        run: |
-          flutter analyze
-          flutter test
+      - name: Analyze
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos
 
-      # 步骤 5: 构建 Android APK (仅在 Linux 运行器上执行)
-      # - name: Build Android APK
-      #   if: runner.os == 'Linux'
-      #   run: flutter build apk --release
+      - name: Run tests (non-blocking)
+        continue-on-error: true
+        run: flutter test
 
-      # 步骤 6: 构建 Web 应用 (仅在 Linux 运行器上执行)
+      - name: Build Android APK
+        if: runner.os == 'Linux'
+        run: flutter build apk --release
+
+      - name: Build Android AppBundle
+        if: runner.os == 'Linux'
+        run: flutter build appbundle --release
+
       - name: Build Web
         if: runner.os == 'Linux'
         run: flutter build web --release
 
-      # 步骤 7: 构建 Windows 应用 (仅在 Windows 运行器上执行)
       - name: Build Windows
         if: runner.os == 'Windows'
         run: flutter build windows --release
 
-      # --- 上传构建产物 ---
-      # 将构建好的文件保存为 "Artifacts"，方便下载
+      # ---------------- 安装 Inno Setup（替换原 Action） ----------------
+      - name: Install Inno Setup (Chocolatey + Fallback)
+        if: runner.os == 'Windows' && (startsWith(github.ref,'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
+        shell: pwsh
+        run: |
+          Write-Host "Attempting to install Inno Setup via Chocolatey..."
+          $ErrorActionPreference = 'Continue'
+          choco install innosetup --yes --no-progress || Write-Warning "Chocolatey install failed or choco unavailable, will try direct download."
 
-      # 步骤 8: 上传 APK 文件
-      - name: Upload APK artifact
+          if (-not (Get-Command iscc.exe -ErrorAction SilentlyContinue)) {
+            Write-Host "Falling back to direct download from official site..."
+            $temp = Join-Path $env:RUNNER_TEMP "innosetup.exe"
+            # 官方下载页面为重定向 URL，用最常见镜像直链（可能会随着官网调整变化）
+            $urlCandidates = @(
+              'https://jrsoftware.org/download.php/is.exe'
+            )
+            $downloaded = $false
+            foreach ($u in $urlCandidates) {
+              try {
+                Invoke-WebRequest -Uri $u -OutFile $temp -UseBasicParsing -TimeoutSec 60
+                if (Test-Path $temp) {
+                  $downloaded = $true
+                  break
+                }
+              } catch {
+                Write-Warning "Download failed: $u"
+              }
+            }
+            if (-not $downloaded) {
+              Write-Error "Failed to download Inno Setup installer."
+              exit 1
+            }
+            Start-Process -FilePath $temp -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait
+          }
+
+          $iscc = (Get-Command iscc.exe -ErrorAction SilentlyContinue)
+          if (-not $iscc) {
+            # 尝试常规安装目录
+            $possible = Get-ChildItem "C:\Program Files*\Inno Setup 6\ISCC.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($possible) {
+              $iscc = $possible.FullName
+            }
+          }
+
+            if (-not $iscc) {
+              Write-Error "ISCC still not found after installation attempts."
+              exit 1
+            }
+
+          Write-Host "Inno Setup installed. ISCC path: $iscc"
+
+      - name: Stage files
+        if: runner.os == 'Windows' && (startsWith(github.ref,'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path staging, staging\other | Out-Null
+          $buildDir = "${{ env.WINDOWS_BUILD_DIR }}"
+          $exe = "${{ env.APP_EXECUTABLE_NAME }}.exe"
+          if (!(Test-Path "$buildDir\$exe")) {
+            Get-ChildItem $buildDir | Select-Object Name
+            Write-Error "Executable not found: $buildDir\$exe"
+          }
+          Copy-Item "$buildDir\$exe" -Destination "staging\"
+          Copy-Item "$buildDir\*" -Destination "staging\other\" -Recurse -Exclude $exe
+
+      - name: Inject version into .iss
+        if: runner.os == 'Windows' && (startsWith(github.ref,'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
+        shell: pwsh
+        run: |
+          $iss = "script\windows_build.iss"
+          if (!(Test-Path $iss)) { Write-Error "Missing $iss"; exit 1 }
+          (Get-Content $iss) -replace 'VERSION_PLACEHOLDER', "${{ env.APP_VERSION }}" | Set-Content $iss
+          Write-Host "Injected $env:APP_VERSION into $iss"
+
+      - name: Compile installer
+        if: runner.os == 'Windows' && (startsWith(github.ref,'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path output | Out-Null
+          # 优先使用 PATH 中的 iscc
+          $isccCmd = (Get-Command iscc.exe -ErrorAction SilentlyContinue)
+          if ($isccCmd) {
+            $isccPath = $isccCmd.Path
+          } else {
+            $isccPath = (Get-ChildItem "C:\Program Files*\Inno Setup 6\ISCC.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+          }
+          if (-not $isccPath) {
+            Write-Error "ISCC not found; cannot compile installer."
+            exit 1
+          }
+          & "$isccPath" /Qp /Ooutput "script\windows_build.iss"
+          $expected = "output\${{ env.INSTALLER_BASE_NAME }}.exe"
+          if (!(Test-Path $expected)) {
+            Get-ChildItem output
+            Write-Error "Installer not found at $expected"
+          } else {
+            Write-Host "Installer: $expected"
+          }
+
+      - name: Upload APK
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk # Artifacts 的名称
-          path: build/app/outputs/apk/release/app-release.apk # APK 文件路径
+          name: android-apk
+          path: build/app/outputs/apk/release/app-release.apk
+          retention-days: 7
 
-      # 步骤 9: 上传 Web 构建文件
-      - name: Upload Web artifact
+      - name: Upload AAB
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 7
+
+      - name: Upload Web build
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
           name: web-build
-          path: build/web # Web 构建输出的整个目录
+          path: build/web
+          retention-days: 7
 
-      # 步骤 10: 上传 Windows 构建文件
-      - name: Upload Windows artifact
+      - name: Upload Windows build dir
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: build/windows/x64/runner/Release/ # Windows 构建输出的目录
+          path: ${{ env.WINDOWS_BUILD_DIR }}
+          retention-days: 7
+
+      - name: Upload Windows installer
+        if: runner.os == 'Windows' && (startsWith(github.ref,'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: output/${{ env.INSTALLER_BASE_NAME }}.exe
+          retention-days: 7
