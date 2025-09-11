@@ -31,7 +31,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          version: '3.32.8'
+          flutter-version: '3.29.2'
+          cache: true
           channel: 'stable' # 或者 'beta', 'dev'
 
       # 步骤3: 安装项目依赖
