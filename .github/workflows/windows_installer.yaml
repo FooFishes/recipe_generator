@@ -6,9 +6,6 @@ on:
     # 仅在向 release 分支推送 commit 时触发
     branches:
       - release
-    # 仅在推送 v*.*.* 格式的 tag 时触发
-    tags:
-      - 'v*.*.*'
   pull_request:
     # 仅在有 PR 合并到 release 分支时触发
     types: [closed]
