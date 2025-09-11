@@ -1,0 +1,93 @@
+name: Build Windows Installer
+
+# 触发工作流程的条件
+on:
+  push:
+    # 仅在向 release 分支推送 commit 时触发
+    branches:
+      - release
+  pull_request:
+    # 仅在有 PR 合并到 release 分支时触发
+    types: [closed]
+    branches:
+      - release
+  # 允许手动触发
+  workflow_dispatch:
+
+jobs:
+  build:
+    # 确保只在 PR 被 'merged' (合并) 时才运行
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+
+    # 使用 Windows 运行环境，它已预装 Inno Setup
+    runs-on: windows-2022
+
+    steps:
+      # 步骤1: 检出你的代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 步骤2: 设置 Flutter 环境
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable' # 或者 'beta', 'dev'
+
+      # 步骤3: 安装项目依赖
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 步骤4: 编译 Flutter Windows 应用
+      - name: Build Flutter App
+        run: flutter build windows --release
+
+      # 步骤5: 准备 Inno Setup 所需的文件结构
+      - name: Prepare files for Inno Setup
+        run: |
+          # 创建一个临时的打包源目录，模仿你的手动操作
+          mkdir staging
+          mkdir staging\other
+          
+          # 将编译产物按 Inno Setup 脚本的期望结构进行复制
+          copy build\windows\x64\runner\Release\recipe_generator.exe staging\
+          copy build\windows\x64\runner\Release\*.dll staging\other\
+          xcopy /E /I build\windows\x64\runner\Release\data staging\other\data
+        shell: cmd
+
+      # 步骤6: 从 Git Tag 中提取版本号 (例如从 "v1.2.3" 提取 "1.2.3")
+      - name: Extract version from tag
+        # 仅当触发事件是推送 tag 时运行此步骤
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          # 从 GITHUB_REF_NAME (例如 "v1.2.3") 中移除 "v" 前缀
+          # 并将结果存入名为 APP_VERSION 的环境变量中
+          echo "APP_VERSION=${{ github.ref_name }}" | sed 's/v//' >> $env:GITHUB_ENV
+        shell: pwsh
+
+      # 步骤7: 如果不是 Tag 触发，则使用一个备用版本号
+      - name: Set fallback version
+        if: (!startsWith(github.ref, 'refs/tags/v'))
+        run: |
+          # 使用日期和 commit hash 作为版本号，确保唯一性
+          $date = Get-Date -Format "yyyyMMdd"
+          $sha = "${{ github.sha }}".Substring(0, 7)
+          echo "APP_VERSION=0.0.0-$date-$sha" >> $env:GITHUB_ENV
+        shell: pwsh
+
+      # 步骤8: 编译 Inno Setup 安装包
+      - name: Compile Inno Setup installer
+        run: |
+          # iscc.exe 已经在 Windows runner 的 PATH 中
+          # 使用 /d 向 Inno 脚本传入变量
+          # /dAppVersion 的值来自上一步设置的环境变量
+          # /dSourcePath 指定我们准备好的临时目录 'staging'
+          iscc.exe /dAppVersion="${{ env.APP_VERSION }}" /dSourcePath="staging" "script\your-script-name.iss"
+        shell: cmd
+
+      # 步骤9: 上传构建产物 (安装包)
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chickafocus-installer-${{ env.APP_VERSION }}
+          # 路径是 Inno 脚本中 OutputDir 和 OutputBaseFilename 的组合
+          path: output/*.exe
