@@ -4,16 +4,19 @@ on:
   push:
     branches: [main]
     tags:
-      - 'v*'
+      - 'v*'          # 推送 v 开头的 tag：构建并生成安装器
   pull_request:
     branches: [main]
   workflow_dispatch:
     inputs:
+      version:
+        description: '自定义版本号 (例如 1.2.3 或 1.2.3-beta)，留空则自动生成'
+        required: false
       buildInstaller:
-        description: '是否构建 Windows 安装器（非 tag 情况下测试用）'
+        description: '是否构建 Windows 安装器（手动触发时可控）'
         type: choice
         options: [no, yes]
-        default: no
+        default: yes
 
 permissions:
   contents: read
@@ -31,7 +34,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -45,6 +47,32 @@ jobs:
           channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
+      - name: Resolve version
+        id: resolve_version
+        shell: pwsh
+        run: |
+          $event = "${{ github.event_name }}"
+          $refName = "${{ github.ref_name }}"
+          $inputVersion = "${{ inputs.version }}"
+          if ($event -eq "workflow_dispatch") {
+            if ($inputVersion) {
+              $version = $inputVersion
+            } else {
+              $version = (Get-Date -Format "0.0.0-yyyyMMddHHmmss")
+            }
+          } elseif ($refName -match '^v\d') {
+            # tag: v1.2.3
+            $version = $refName.Substring(1)
+          } else {
+            $version = "0.0.0-${{ github.run_number }}"
+          }
+          "APP_VERSION=$version" | Out-File -FilePath $Env:GITHUB_ENV -Append
+          Write-Host "Resolved version: $version"
+          Write-Host "::notice title=Build Version::$version"
+
+      - name: Show version (debug)
+        run: echo "Building version: $APP_VERSION"
+
       - name: Flutter pub get
         run: flutter pub get
 
@@ -55,6 +83,7 @@ jobs:
         continue-on-error: true
         run: flutter test
 
+      # Android (Linux)
       - name: Build Android APK
         if: runner.os == 'Linux'
         run: flutter build apk --release
@@ -63,63 +92,59 @@ jobs:
         if: runner.os == 'Linux'
         run: flutter build appbundle --release
 
+      # Web (Linux)
       - name: Build Web
         if: runner.os == 'Linux'
         run: flutter build web --release
 
+      # Windows (Windows)
       - name: Build Windows
         if: runner.os == 'Windows'
         run: flutter build windows --release
 
-      # Installer preparation (tag OR manual dispatch asking yes)
+      # ---------------- Windows Installer (tag 或 手动触发且指定) ----------------
       - name: Setup Inno Setup
-        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || inputs.buildInstaller == 'yes')
+        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
         uses: MinoruSekine/setup-inno-setup@v3
 
       - name: Stage files for Inno Setup
-        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || inputs.buildInstaller == 'yes')
+        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path staging, staging\other | Out-Null
+            # 使用构建目录
           $buildDir = "${{ env.WINDOWS_BUILD_DIR }}"
           $exe = "${{ env.APP_EXECUTABLE_NAME }}.exe"
           if (!(Test-Path "$buildDir\$exe")) {
-            Write-Error "Executable $buildDir\$exe not found. Check APP_EXECUTABLE_NAME."
+            Write-Error "Executable $buildDir\$exe not found. Check APP_EXECUTABLE_NAME or build output."
           }
           Copy-Item "$buildDir\$exe" -Destination "staging\"
           Copy-Item "$buildDir\*" -Destination "staging\other\" -Recurse -Exclude $exe
 
       - name: Update .iss version
-        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || inputs.buildInstaller == 'yes')
+        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
         shell: pwsh
         run: |
-          $refName = "${{ github.ref_name }}"
-          if ($refName -match '^v\d') {
-            $version = $refName.Substring(1)
-          } else {
-            # 非 tag 手动触发时给一个占位或时间戳
-            if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-              $version = (Get-Date -Format "0.0.0-HHmmss")
-            } else {
-              $version = "0.0.0-dev"
-            }
-          }
           $issPath = "script\windows_build.iss"
           if (!(Test-Path $issPath)) { Write-Error "ISS file not found at $issPath"; exit 1 }
-          (Get-Content $issPath) -replace 'VERSION_PLACEHOLDER', $version | Set-Content $issPath
-          Write-Host "Injected version $version into $issPath"
+          (Get-Content $issPath) -replace 'VERSION_PLACEHOLDER', $env:APP_VERSION | Set-Content $issPath
+          Write-Host "Injected version $env:APP_VERSION into $issPath"
 
       - name: Compile installer (Inno Setup)
-        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || inputs.buildInstaller == 'yes')
+        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path output | Out-Null
           iscc.exe /Qp /Ooutput "script\windows_build.iss"
           $expected = "output\${{ env.INSTALLER_BASE_NAME }}.exe"
           if (!(Test-Path $expected)) {
+            Get-ChildItem output
             Write-Error "Installer not found at $expected"
+          } else {
+            Write-Host "Installer generated: $expected"
           }
 
+      # ---------------- Artifacts ----------------
       - name: Upload APK
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
@@ -153,7 +178,7 @@ jobs:
           retention-days: 7
 
       - name: Upload Windows installer
-        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || inputs.buildInstaller == 'yes')
+        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
