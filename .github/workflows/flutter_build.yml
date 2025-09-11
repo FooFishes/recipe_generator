@@ -4,18 +4,20 @@ on:
   push:
     branches: [main]
     tags:
-      - 'v*'          # 推送 v 开头的 tag：构建并生成安装器
+      - 'v*'
   pull_request:
     branches: [main]
   workflow_dispatch:
     inputs:
       version:
-        description: '自定义版本号 (例如 1.2.3 或 1.2.3-beta)，留空则自动生成'
+        description: '自定义版本号 (例: 1.2.3 或 1.2.3-beta)。留空自动生成'
         required: false
       buildInstaller:
-        description: '是否构建 Windows 安装器（手动触发时可控）'
+        description: '是否构建 Windows 安装器'
         type: choice
-        options: [no, yes]
+        options:
+          - no
+          - yes
         default: yes
 
 permissions:
@@ -37,7 +39,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Flutter
@@ -61,26 +63,26 @@ jobs:
               $version = (Get-Date -Format "0.0.0-yyyyMMddHHmmss")
             }
           } elseif ($refName -match '^v\d') {
-            # tag: v1.2.3
             $version = $refName.Substring(1)
           } else {
             $version = "0.0.0-${{ github.run_number }}"
           }
           "APP_VERSION=$version" | Out-File -FilePath $Env:GITHUB_ENV -Append
-          Write-Host "Resolved version: $version"
-          Write-Host "::notice title=Build Version::$version"
+          Write-Host "Final version: $version"
 
-      - name: Flutter pub get
+      - name: Show version
+        run: echo "Building version: ${{ env.APP_VERSION }}"
+
+      - name: flutter pub get
         run: flutter pub get
 
       - name: Analyze
         run: flutter analyze --no-fatal-warnings --no-fatal-infos
 
-      - name: Run tests
+      - name: Run tests (non-blocking)
         continue-on-error: true
         run: flutter test
 
-      # Android (Linux)
       - name: Build Android APK
         if: runner.os == 'Linux'
         run: flutter build apk --release
@@ -89,59 +91,113 @@ jobs:
         if: runner.os == 'Linux'
         run: flutter build appbundle --release
 
-      # Web (Linux)
       - name: Build Web
         if: runner.os == 'Linux'
         run: flutter build web --release
 
-      # Windows (Windows)
       - name: Build Windows
         if: runner.os == 'Windows'
         run: flutter build windows --release
 
-      # ---------------- Windows Installer (tag 或 手动触发且指定) ----------------
-      - name: Setup Inno Setup
-        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
-        uses: MinoruSekine/setup-inno-setup@v3
+      # ---------------- 安装 Inno Setup（替换原 Action） ----------------
+      - name: Install Inno Setup (Chocolatey + Fallback)
+        if: runner.os == 'Windows' && (startsWith(github.ref,'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
+        shell: pwsh
+        run: |
+          Write-Host "Attempting to install Inno Setup via Chocolatey..."
+          $ErrorActionPreference = 'Continue'
+          choco install innosetup --yes --no-progress || Write-Warning "Chocolatey install failed or choco unavailable, will try direct download."
 
-      - name: Stage files for Inno Setup
-        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
+          if (-not (Get-Command iscc.exe -ErrorAction SilentlyContinue)) {
+            Write-Host "Falling back to direct download from official site..."
+            $temp = Join-Path $env:RUNNER_TEMP "innosetup.exe"
+            # 官方下载页面为重定向 URL，用最常见镜像直链（可能会随着官网调整变化）
+            $urlCandidates = @(
+              'https://jrsoftware.org/download.php/is.exe'
+            )
+            $downloaded = $false
+            foreach ($u in $urlCandidates) {
+              try {
+                Invoke-WebRequest -Uri $u -OutFile $temp -UseBasicParsing -TimeoutSec 60
+                if (Test-Path $temp) {
+                  $downloaded = $true
+                  break
+                }
+              } catch {
+                Write-Warning "Download failed: $u"
+              }
+            }
+            if (-not $downloaded) {
+              Write-Error "Failed to download Inno Setup installer."
+              exit 1
+            }
+            Start-Process -FilePath $temp -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -Wait
+          }
+
+          $iscc = (Get-Command iscc.exe -ErrorAction SilentlyContinue)
+          if (-not $iscc) {
+            # 尝试常规安装目录
+            $possible = Get-ChildItem "C:\Program Files*\Inno Setup 6\ISCC.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($possible) {
+              $iscc = $possible.FullName
+            }
+          }
+
+            if (-not $iscc) {
+              Write-Error "ISCC still not found after installation attempts."
+              exit 1
+            }
+
+          Write-Host "Inno Setup installed. ISCC path: $iscc"
+
+      - name: Stage files
+        if: runner.os == 'Windows' && (startsWith(github.ref,'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path staging, staging\other | Out-Null
-            # 使用构建目录
           $buildDir = "${{ env.WINDOWS_BUILD_DIR }}"
           $exe = "${{ env.APP_EXECUTABLE_NAME }}.exe"
           if (!(Test-Path "$buildDir\$exe")) {
-            Write-Error "Executable $buildDir\$exe not found. Check APP_EXECUTABLE_NAME or build output."
+            Get-ChildItem $buildDir | Select-Object Name
+            Write-Error "Executable not found: $buildDir\$exe"
           }
           Copy-Item "$buildDir\$exe" -Destination "staging\"
           Copy-Item "$buildDir\*" -Destination "staging\other\" -Recurse -Exclude $exe
 
-      - name: Update .iss version
-        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
+      - name: Inject version into .iss
+        if: runner.os == 'Windows' && (startsWith(github.ref,'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
         shell: pwsh
         run: |
-          $issPath = "script\windows_build.iss"
-          if (!(Test-Path $issPath)) { Write-Error "ISS file not found at $issPath"; exit 1 }
-          (Get-Content $issPath) -replace 'VERSION_PLACEHOLDER', $env:APP_VERSION | Set-Content $issPath
-          Write-Host "Injected version $env:APP_VERSION into $issPath"
+          $iss = "script\windows_build.iss"
+          if (!(Test-Path $iss)) { Write-Error "Missing $iss"; exit 1 }
+          (Get-Content $iss) -replace 'VERSION_PLACEHOLDER', "${{ env.APP_VERSION }}" | Set-Content $iss
+          Write-Host "Injected $env:APP_VERSION into $iss"
 
-      - name: Compile installer (Inno Setup)
-        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
+      - name: Compile installer
+        if: runner.os == 'Windows' && (startsWith(github.ref,'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path output | Out-Null
-          iscc.exe /Qp /Ooutput "script\windows_build.iss"
+          # 优先使用 PATH 中的 iscc
+          $isccCmd = (Get-Command iscc.exe -ErrorAction SilentlyContinue)
+          if ($isccCmd) {
+            $isccPath = $isccCmd.Path
+          } else {
+            $isccPath = (Get-ChildItem "C:\Program Files*\Inno Setup 6\ISCC.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+          }
+          if (-not $isccPath) {
+            Write-Error "ISCC not found; cannot compile installer."
+            exit 1
+          }
+          & "$isccPath" /Qp /Ooutput "script\windows_build.iss"
           $expected = "output\${{ env.INSTALLER_BASE_NAME }}.exe"
           if (!(Test-Path $expected)) {
             Get-ChildItem output
             Write-Error "Installer not found at $expected"
           } else {
-            Write-Host "Installer generated: $expected"
+            Write-Host "Installer: $expected"
           }
 
-      # ---------------- Artifacts ----------------
       - name: Upload APK
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
@@ -175,7 +231,7 @@ jobs:
           retention-days: 7
 
       - name: Upload Windows installer
-        if: runner.os == 'Windows' && (startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
+        if: runner.os == 'Windows' && (startsWith(github.ref,'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.buildInstaller == 'yes'))
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
