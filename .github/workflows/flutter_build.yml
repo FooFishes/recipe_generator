@@ -70,9 +70,6 @@ jobs:
           "APP_VERSION=$version" | Out-File -FilePath $Env:GITHUB_ENV -Append
           Write-Host "Final version: $version"
 
-      - name: Show version
-        run: echo "Building version: ${{ env.APP_VERSION }}"
-
       - name: flutter pub get
         run: flutter pub get
 
