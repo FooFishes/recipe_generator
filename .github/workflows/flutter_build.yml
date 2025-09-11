@@ -70,9 +70,6 @@ jobs:
           Write-Host "Resolved version: $version"
           Write-Host "::notice title=Build Version::$version"
 
-      - name: Show version (debug)
-        run: echo "Building version: $APP_VERSION"
-
       - name: Flutter pub get
         run: flutter pub get
 
