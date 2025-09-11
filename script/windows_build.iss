@@ -24,7 +24,7 @@ AllowNoIcons=yes
 PrivilegesRequired=lowest
 ; 移除 OutputDir，由命令行参数控制
 ; OutputDir=C:\Users\lzyyy\Desktop
-OutputBaseFilename=ChickaFocus-Setup
+OutputBaseFilename=RecipeGenerator-Setup
 SolidCompression=yes
 WizardStyle=modern
 
